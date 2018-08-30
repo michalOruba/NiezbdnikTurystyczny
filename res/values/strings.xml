@@ -8,4 +8,5 @@
     <string name="section_format">Hello World from section: %1$d</string>
     <string name="navigation1_fragment_name">Wyszukaj</string>
     <string name="navigation2_fragment_name">Nawiguj</string>
+    <string name="MASLevel">m n.p.m</string>
 </resources>
