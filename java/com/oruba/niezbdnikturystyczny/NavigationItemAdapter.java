@@ -34,7 +34,6 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
                     R.layout.navigation_list_item, parent, false);
         }
 
-        System.out.println(R.string.MASLevel);
         TextView navigationHillName = (TextView) listItemView.findViewById(R.id.navigation_hill_name);
         navigationHillName.setText(currentItem.getmHillName());
 
