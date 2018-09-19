@@ -3,15 +3,29 @@ package com.oruba.niezbdnikturystyczny;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
+import android.widget.ListView;
+
+import java.util.ArrayList;
 
 public class NavigationActivity extends AppCompatActivity{
     private static final String TAG = "NavigationActivity";
+
+    final ArrayList<NavigationItem> hills = new ArrayList<NavigationItem>();
+    ListView listView;
+    ImageView hillInfoView;
+    private ConstraintLayout constraintLayout;
+    private ConstraintSet constraintSetOld = new ConstraintSet();
+    private ConstraintSet constraintSetNew = new ConstraintSet();
+    private boolean altLayout;
 
     private SectionsPageAdapter mSectionsPageAdapter;
 

@@ -6,12 +6,14 @@ public class NavigationItem {
     private int mImageResourceId;
     private double mHillLatitude;
     private double mHillLongitude;
+    private String mHillDescription;
 
 
-    public NavigationItem(String hillName, int hillHeight, int imageResourceID, double hillLatitude, double hillLongitude){
+    public NavigationItem(String hillName, int hillHeight, int imageResourceID, double hillLatitude, double hillLongitude, String hillDescription){
         mHillName = hillName;
         mHillHeight = hillHeight;
         mImageResourceId = imageResourceID;
+        mHillDescription = hillDescription;
 
     }
 
@@ -33,5 +35,9 @@ public class NavigationItem {
 
     public double getmHillLatitude() {
         return mHillLatitude;
+    }
+
+    public String getmHillDescription() {
+        return mHillDescription;
     }
 }
