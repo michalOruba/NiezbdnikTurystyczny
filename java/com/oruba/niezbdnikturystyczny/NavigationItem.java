@@ -14,6 +14,8 @@ public class NavigationItem {
         mHillHeight = hillHeight;
         mImageResourceId = imageResourceID;
         mHillDescription = hillDescription;
+        mHillLatitude = hillLatitude;
+        mHillLongitude = hillLongitude;
 
     }
 
