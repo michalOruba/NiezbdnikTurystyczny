@@ -37,6 +37,8 @@ import com.google.firebase.firestore.GeoPoint;
 import com.oruba.niezbdnikturystyczny.models.User;
 import com.oruba.niezbdnikturystyczny.models.UserLocation;
 
+import java.util.ArrayList;
+
 import static com.oruba.niezbdnikturystyczny.Constants.ERROR_DIALOG_REQUEST;
 import static com.oruba.niezbdnikturystyczny.Constants.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
 import static com.oruba.niezbdnikturystyczny.Constants.PERMISSIONS_REQUEST_ENABLE_GPS;
@@ -49,6 +51,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean mLocationPermissionGranted = false;
     private FusedLocationProviderClient mFusedLocationProvider;
     private UserLocation mUserLocation;
+    private ArrayList<User> mUserList = new ArrayList<>();
+    private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
+    private Bundle bundle = new Bundle();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +103,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+
+
     private void getUserDetails(){
         if (mUserLocation == null){
             mUserLocation = new UserLocation();
@@ -111,9 +119,12 @@ public class MainActivity extends AppCompatActivity {
                     if (task.isSuccessful()){
                         Log.d(TAG, "onComplete: successfully get the user details.");
 
+
                         User user = task.getResult().toObject(User.class);
                         mUserLocation.setUser(user);
+
                         ((UserClient) getApplicationContext()).setUser(user);
+
                         getLastKnownLocation();
                     }
                 }
@@ -124,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
 
     private void saveUserLocation(){
 
@@ -138,6 +150,8 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "saveUserLocation: \ninserted users location into database" +
                         "\nlatitude: " + mUserLocation.getGeo_point().getLatitude() +
                         "\nlongitude: " + mUserLocation.getGeo_point().getLongitude());
+
+
                     }
                 }
             });
@@ -160,9 +174,9 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "onComplete: latitude: " + geoPoint.getLatitude());
                     Log.d(TAG, "onComplete: longitude: " + geoPoint.getLongitude());
 
-
                     mUserLocation.setGeo_point(geoPoint);
                     mUserLocation.setTime_stamp(null);
+
                     saveUserLocation();
                 }
             }

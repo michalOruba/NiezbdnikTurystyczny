@@ -2,22 +2,25 @@ package com.oruba.niezbdnikturystyczny.models;
 
 
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.ServerTimestamp;
+
+import java.util.Date;
 
 public class Event {
 
     private GeoPoint geo_point;
-    private String title;
+    private String name;
     private String avatar;
+    private @ServerTimestamp Date time_stamp;
 
-
-    public Event(GeoPoint geo_point, String title, String avatar) {
+    public Event(GeoPoint geo_point, String name, String avatar, Date time_stamp) {
         this.geo_point = geo_point;
-        this.title = title;
+        this.name = name;
         this.avatar = avatar;
+        this.time_stamp = time_stamp;
     }
 
     public Event() {
-
     }
 
     public GeoPoint getGeo_point() {
@@ -28,12 +31,12 @@ public class Event {
         this.geo_point = geo_point;
     }
 
-    public String getTitle() {
-        return title;
+    public String getName() {
+        return name;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getAvatar() {
@@ -44,12 +47,21 @@ public class Event {
         this.avatar = avatar;
     }
 
+    public Date getTime_stamp() {
+        return time_stamp;
+    }
+
+    public void setTime_stamp(Date time_stamp) {
+        this.time_stamp = time_stamp;
+    }
+
     @Override
     public String toString() {
         return "Event{" +
                 "geo_point=" + geo_point +
-                ", title='" + title + '\'' +
+                ", name='" + name + '\'' +
                 ", avatar='" + avatar + '\'' +
+                ", time_stamp=" + time_stamp +
                 '}';
     }
 }
