@@ -43,7 +43,8 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginLeft="10dp"
-                android:id="@+id/btn_full_screen_map"/>
+                android:id="@+id/btn_full_screen_map"
+                android:visibility="gone"/>
         </RelativeLayout>
 
 

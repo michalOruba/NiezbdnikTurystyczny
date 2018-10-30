@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +29,6 @@ import java.util.ArrayList;
 
 public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
 
-    private ConstraintLayout constraintLayout;
     Dialog myDialog;
 
     public NavigationItemAdapter(@NonNull Activity context, ArrayList<NavigationItem> items) {
@@ -38,11 +38,12 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
     @NonNull
     @Override
     public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-
+        Log.d("NavigationItemAdapter", "getView: creating List View");
 
 
         View listItemView = convertView;
         final NavigationItem currentItem = getItem(position);
+
 
         //constraintLayout = listItemView.findViewById(R.id.desc_navigation_item_container);
         myDialog = new Dialog(getContext());
@@ -90,12 +91,15 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
             }
         });
 
-        ImageView navigateImageView = (ImageView) listItemView.findViewById(R.id.navigation_navigate_button);
+        final ImageView navigateImageView = (ImageView) listItemView.findViewById(R.id.navigation_navigate_button);
+
+
         navigateImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Toast.makeText(getContext(),"Klikam navi " + String.valueOf(position),Toast.LENGTH_LONG).show();
                 Log.d("Navigation1Fragment", "Dotykam navi!!!!!!!!!!!!!!!!!");
+
                 Intent navigateIntent = new Intent(getContext(), MapsActivity.class );
                 navigateIntent.putExtra("HILL_LATITUDE", currentItem.getmHillLatitude());
                 navigateIntent.putExtra("HILL_LONGITUDE", currentItem.getmHillLongitude());
@@ -103,9 +107,13 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
 
                 Log.d("Navigation1Fragment", "1st Latitude " + currentItem.getmHillLatitude());
                 Log.d("Navigation1Fragment", "1st Longitude " + currentItem.getmHillLongitude());
+
+                navigateIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 getContext().startActivity(navigateIntent);
+
             }
         });
+
 
         return listItemView;
     }

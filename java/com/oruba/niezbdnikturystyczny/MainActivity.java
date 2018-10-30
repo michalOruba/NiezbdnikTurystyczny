@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -46,14 +47,11 @@ import static com.oruba.niezbdnikturystyczny.Constants.PERMISSIONS_REQUEST_ENABL
 public class MainActivity extends AppCompatActivity {
     public final String TAG = "MainActivity";
 
-    private ImageButton menu_navigation, menu_help, menu_issue, menu_achievement;
+    private ImageView menu_navigation, menu_help, menu_issue, menu_achievement;
     private FirebaseFirestore mDb;
     private boolean mLocationPermissionGranted = false;
     private FusedLocationProviderClient mFusedLocationProvider;
     private UserLocation mUserLocation;
-    private ArrayList<User> mUserList = new ArrayList<>();
-    private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
-    private Bundle bundle = new Bundle();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

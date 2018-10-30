@@ -39,6 +39,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -96,6 +97,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GeoApiContext mGeoApiContext = null;
     private FirebaseFirestore mDb;
     private ArrayList<PolylineData> mPolylinesData = new ArrayList<>();
+    private Bundle bundle = new Bundle();
 
 
     @Override
@@ -104,8 +106,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
 
         mDb = FirebaseFirestore.getInstance();
-        getUserPosition();
-
 
         setContentView(R.layout.activity_maps);
         mUserListRecyclerView = findViewById(R.id.user_list_recycler_view);
@@ -115,7 +115,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Bundle mapViewBundle = null;
         if (savedInstanceState != null) {
             mapViewBundle = savedInstanceState.getBundle(MAPVIEW_BUNDLE_KEY);
+            mUserLocations = savedInstanceState.getParcelableArrayList("USER_LOCATIONS");
         }
+        else{
+            mUserLocations = new ArrayList<>();
+        }
+
         mMapView = (MapView) findViewById(R.id.user_list_map);
         mMapView.onCreate(mapViewBundle);
 
@@ -161,80 +166,92 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Log.d("NavigateActivity", "Hill latitude: " + hillLatitude + ", hill longitude " + hillLongitude);
 
-
     }
 
-    private void getUserPosition() {
-        DocumentReference docRef = mDb.collection(getString(R.string.collection_user_locations))
-                .document(FirebaseAuth.getInstance().getUid());
-        Log.d(TAG, "getUserPosition: user ID: " + FirebaseAuth.getInstance().getUid());
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                Log.d(TAG, "getUserPosition: successfully get the user location.");
-                if (task.isSuccessful()) {
-                    Log.d(TAG, "getUserPosition: successfully get the user location.");
+    private void getUserPosition(final Marker marker) {
 
-                    mUserPosition = task.getResult().toObject(UserLocation.class);
-                    if (mUserPosition != null) {
-                        Log.d(TAG, "D: " + mUserPosition.getGeo_point().getLatitude());
-                        Log.d(TAG, "getUserPosition: Long: " + mUserPosition.getGeo_point().getLongitude());
+        String id = FirebaseAuth.getInstance().getUid();
+        if (id != null) {
+            mDb = FirebaseFirestore.getInstance();
+            Log.d(TAG, "getUserPosition: user ID: " + id);
+            DocumentReference docRef = mDb.collection(getString(R.string.collection_user_locations))
+                    .document(FirebaseAuth.getInstance().getUid());
+            Log.d(TAG, "getUserPosition: " + docRef);
+
+            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    Log.d(TAG, "getUserPosition: successfully get the user location.");
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "getUserPosition: successfully get the user location.");
+
+                        mUserPosition = task.getResult().toObject(UserLocation.class);
+                        if (task.getResult().toObject(UserLocation.class) != null) {
+
+                            Log.d(TAG, "D: " + mUserPosition.getGeo_point().getLatitude());
+                            Log.d(TAG, "getUserPosition: Long: " + mUserPosition.getGeo_point().getLongitude());
+                            mUserLocations.add(task.getResult().toObject(UserLocation.class));
+                            Log.d(TAG, "onSaveInstanceState: im saving things to Parcel");
+                            bundle.putParcelableArrayList("USER_LOCATIONS", mUserLocations);
+                            calculateDirections(marker);
+                        }
+                    } else {
+                        Log.d(TAG, "getUserPosition: Cached get failed: ", task.getException());
                     }
-                } else {
-                    Log.d(TAG, "getUserPosition: Cached get failed: ", task.getException());
+
                 }
 
-            }
-        });
+            });
+        }
     }
 
 
     private void calculateDirections(Marker marker) {
         Log.d(TAG, "calculateDirections: calculating directions");
 
-        if(mUserPosition == null){
-            Log.d(TAG, "calculateDirections: Brak współrzędnych użytkownika");
-            getUserPosition();
+        if(mUserLocations.size() > 0) {
+
+            com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
+                    marker.getPosition().latitude,
+                    marker.getPosition().longitude
+            );
+
+            DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
+
+            directions.alternatives(true);
+            directions.mode(TravelMode.WALKING);
+            directions.origin(
+                    new com.google.maps.model.LatLng(
+                            mUserLocations.get(mUserLocations.size() - 1).getGeo_point().getLatitude(),
+                            mUserLocations.get(mUserLocations.size() - 1).getGeo_point().getLongitude()
+                    )
+            );
+            Log.d(TAG, "calculateDirections: destination: " + destination.toString());
+            directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
+                @Override
+                public void onResult(DirectionsResult result) {
+                    Log.d(TAG, "calculateDirections: routes: " + result.routes[0].toString());
+                    Log.d(TAG, "calculateDirections: duration: " + result.routes[0].legs[0].duration);
+                    Log.d(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
+                    Log.d(TAG, "calculateDirections: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
+
+                    addPolylinesToMap(result);
+                }
+
+                @Override
+                public void onFailure(Throwable e) {
+                    Log.d(TAG, "calculateDirections: Failed to get directions: " + e.getMessage());
+                }
+            });
         }
+        else{
+            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(this);
+            alertBuilder.setCancelable(true);
+            alertBuilder.setMessage("Błąd obliczania odległości");
+            final AlertDialog alert = alertBuilder.create();
+            alert.show();
 
-        com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
-                marker.getPosition().latitude,
-                marker.getPosition().longitude
-                //50.25213550,
-                //19.02714340
-        );
-
-        DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
-
-        directions.alternatives(true);
-        directions.mode(TravelMode.WALKING);
-        directions.origin(
-                new com.google.maps.model.LatLng(
-
-                        //currentLatitude,
-                        //currentLongitude
-                        mUserPosition.getGeo_point().getLatitude(),
-                        mUserPosition.getGeo_point().getLongitude()
-                )
-        );
-        Log.d(TAG, "calculateDirections: destination: " + destination.toString());
-        directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
-            @Override
-            public void onResult(DirectionsResult result) {
-                Log.d(TAG, "calculateDirections: routes: " + result.routes[0].toString());
-                Log.d(TAG, "calculateDirections: duration: " + result.routes[0].legs[0].duration);
-                Log.d(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
-                Log.d(TAG, "calculateDirections: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
-
-                addPolylinesToMap(result);
-            }
-
-
-            @Override
-            public void onFailure(Throwable e) {
-                Log.d(TAG, "calculateDirections: Failed to get directions: " + e.getMessage());
-            }
-        });
+        }
     }
 
     private void addPolylinesToMap(final DirectionsResult result) {
@@ -303,7 +320,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .position(endLocation)
                         .title("Trip: #" + index + " to " + hillName)
                         .snippet("Duration: " + polylineData.getLeg().duration + "\n" +
-                        "Distance: " + polylineData.getLeg().distance));
+                        "Distance: " + polylineData.getLeg().distance + "\n" +
+                        "Start navigation?"));
                 mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
                     @Override
@@ -410,7 +428,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         Marker hillMarker = mMap.addMarker(new MarkerOptions()
                 .position(new LatLng(hillLatitude, hillLongitude)));
         setCameraView();
-        calculateDirections(hillMarker);
+        getUserPosition(hillMarker);
+        //calculateDirections(hillMarker);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -479,6 +498,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         mMapView.onSaveInstanceState(mapViewBundle);
+
     }
 
 

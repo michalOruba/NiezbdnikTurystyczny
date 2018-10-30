@@ -52,6 +52,7 @@
             android:layout_marginRight="24dp"
             android:scaleType="centerCrop"
             android:src="@drawable/icons8_info_48"
+            android:foreground="?android:attr/selectableItemBackground"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
@@ -64,6 +65,7 @@
             android:layout_marginTop="24dp"
             android:scaleType="centerCrop"
             android:src="@drawable/icons8_route_48"
+            android:foreground="?android:attr/selectableItemBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

@@ -4,56 +4,74 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/Black"
     tools:context=".MainActivity">
 
-    <ImageButton
+    <ImageView
         android:id="@+id/menu_navigation"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:clickable="true"
-        android:background="?android:attr/selectableItemBackground"
+        android:layout_marginBottom="6dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="1dp"
+        android:scaleType="fitXY"
+        android:foreground="?android:attr/selectableItemBackground"
         app:layout_constraintBottom_toTopOf="@+id/menu_help"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@mipmap/ic_launcher"/>
+        app:srcCompat="@drawable/znak_nawiguj" />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/menu_help"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:clickable="true"
-        android:background="?android:attr/selectableItemBackground"
+        android:layout_marginBottom="6dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="6dp"
+        android:scaleType="fitXY"
+        android:foreground="?android:attr/selectableItemBackground"
         app:layout_constraintBottom_toTopOf="@+id/menu_issue"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/menu_navigation"
-        app:srcCompat="@mipmap/ic_launcher" />
+        app:srcCompat="@drawable/znak_pomocy" />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/menu_issue"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:clickable="true"
-        android:background="?android:attr/selectableItemBackground"
+        android:layout_marginBottom="6dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="6dp"
+        android:scaleType="fitXY"
+        android:foreground="?android:attr/selectableItemBackground"
         app:layout_constraintBottom_toTopOf="@+id/menu_achievement"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/menu_help"
-        app:srcCompat="@mipmap/ic_launcher" />
+        app:srcCompat="@drawable/znak_wydarzenie" />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/menu_achievement"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="?android:attr/selectableItemBackground"
+        android:layout_marginBottom="1dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="6dp"
+        android:scaleType="fitXY"
+        android:foreground="?android:attr/selectableItemBackground"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/menu_issue"
-        app:srcCompat="@mipmap/ic_launcher" />
+        app:srcCompat="@drawable/znak_osiagniecia" />
 </android.support.constraint.ConstraintLayout>
