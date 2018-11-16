@@ -39,12 +39,18 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.maps.DirectionsApiRequest;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PendingResult;
@@ -54,14 +60,18 @@ import com.google.maps.model.DirectionsResult;
 import com.google.maps.model.DirectionsRoute;
 import com.google.maps.model.TravelMode;
 import com.oruba.niezbdnikturystyczny.models.ClusterMarker;
+import com.oruba.niezbdnikturystyczny.models.Event;
 import com.oruba.niezbdnikturystyczny.models.PolylineData;
-import com.oruba.niezbdnikturystyczny.models.User;
 import com.oruba.niezbdnikturystyczny.models.UserLocation;
 import com.oruba.niezbdnikturystyczny.util.MyClusterManagerRenderer;
 import com.oruba.niezbdnikturystyczny.util.ViewWeightAnimationWrapper;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import static com.oruba.niezbdnikturystyczny.Constants.MAPVIEW_BUNDLE_KEY;
 
@@ -73,6 +83,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private final static String TAG = "MapsActivity";
     private static final int MAP_LAYOUT_STATE_CONTRACTED = 0;
     private static final int MAP_LAYOUT_STATE_EXPANDED = 1;
+    private static final int LOCATION_UPDATE_INTERVAL = 10000;
 
 
     private View mUserListRecyclerView;
@@ -92,12 +103,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ClusterManager mClusterManager;
     UserLocation mUserPosition;
     private MyClusterManagerRenderer mClusterManagerRenderer;
-    private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
-    private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
     private GeoApiContext mGeoApiContext = null;
     private FirebaseFirestore mDb;
-    private ArrayList<PolylineData> mPolylinesData = new ArrayList<>();
     private Bundle bundle = new Bundle();
+    private ListenerRegistration mEventListener;
+    private Handler mHandler = new Handler();
+    private Runnable mRunnable;
+
+    private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
+    private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
+    private ArrayList<PolylineData> mPolylinesData = new ArrayList<>();
+    private List<Event> mEvents = new ArrayList<>();
+    private Set<String> mEventsIds = new HashSet<>();
 
 
     @Override
@@ -425,6 +442,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Log.d(TAG, "onMapReady: Jestem w onMapReady!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         mMap = googleMap;
+        getEventsFromDB();
         Marker hillMarker = mMap.addMarker(new MarkerOptions()
                 .position(new LatLng(hillLatitude, hillLongitude)));
         setCameraView();
@@ -453,27 +471,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mClusterManager.setRenderer(mClusterManagerRenderer);
             }
 
-            for (UserLocation userLocation : mUserLocations) {
+            for (Event events : mEvents) {
                 try {
+                    Log.d(TAG, "addMapMarkers: dodaję markery na mapę: " + events.getAdd_date());
                     String snippet;
-                    if (userLocation.getUser().getUser_id().equals(FirebaseAuth.getInstance().getUid())) {
-                        snippet = "This is you";
-                    } else {
-                        snippet = "Determinate route to " + userLocation.getUser().getUsername() + "?";
-                    }
-                    int avatar = R.drawable.cwm_logo;
-                    try {
-                        avatar = Integer.parseInt(userLocation.getUser().getAvatar());
-                    } catch (NumberFormatException e) {
-                        Log.d(TAG, "addMapMarkers: NullPointerException: " + e.getMessage());
-                    }
+                    snippet = "Data wystąpienia: " + events.getAdd_date();
+                    int avatar = events.getAvatar();
 
                     ClusterMarker newClusterMarker = new ClusterMarker(
-                            new LatLng(userLocation.getGeo_point().getLatitude(),userLocation.getGeo_point().getLongitude()),
-                            userLocation.getUser().getUsername(),
+                            new LatLng(events.getGeo_point().getLatitude(),events.getGeo_point().getLongitude()),
+                            events.getEvent_name(),
                             snippet,
-                            avatar,
-                            userLocation.getUser()
+                            avatar
                     );
                     mClusterManager.addItem(newClusterMarker);
                     mClusterMarkers.add(newClusterMarker);
@@ -482,10 +491,59 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
             mClusterManager.cluster();
-
-            setCameraView();
         }
     }
+
+    public void getEventsFromDB(){
+        CollectionReference getEventsRef = mDb.collection(getString(R.string.collection_events));
+
+        mEventListener = getEventsRef
+                .orderBy("add_date", Query.Direction.ASCENDING)
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.e(TAG, "onEvent: Listen failed.", e);
+                            return;
+                        }
+
+                        if(queryDocumentSnapshots != null){
+                            for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+
+                                try{
+                                    Event event = doc.toObject(Event.class);
+                                    if(!mEventsIds.contains(event.getEvent_id())){
+                                        mEventsIds.add(event.getEvent_id());
+                                        mEvents.add(event);
+                                        Log.d(TAG, "onEvent: " + event.getEvent_name());
+                                    }
+                                } catch (NullPointerException ex){
+                                    Log.e(TAG, "retrieveUserLocations: NullPointerException: " + ex.getMessage());
+                                }
+                            }
+                            addMapMarkers();
+                        }
+                    }
+                });
+    }
+
+
+
+    private void startUserLocationsRunnable(){
+        Log.d(TAG, "startUserLocationsRunnable: starting runnable for retrieving updated locations.");
+        mHandler.postDelayed(mRunnable = new Runnable() {
+            @Override
+            public void run() {
+                getEventsFromDB();
+                mHandler.postDelayed(mRunnable, LOCATION_UPDATE_INTERVAL);
+            }
+        }, LOCATION_UPDATE_INTERVAL);
+    }
+
+    private void stopLocationUpdates(){
+        mHandler.removeCallbacks(mRunnable);
+    }
+
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -523,6 +581,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         locationManager.removeUpdates(locationListener);
         mMapView.onDestroy();
         super.onDestroy();
+        stopLocationUpdates();
 
     }
 
@@ -530,6 +589,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onResume() {
         super.onResume();
         mMapView.onResume();
+        startUserLocationsRunnable();
     }
 
     @Override

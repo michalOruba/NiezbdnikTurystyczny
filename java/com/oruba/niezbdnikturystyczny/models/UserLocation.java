@@ -14,6 +14,7 @@ public class UserLocation implements Parcelable {
     private @ServerTimestamp Date time_stamp;
     private double latitude, longitude;
     private User user;
+
     private static final String TAG = "UserLocation";
 
     public UserLocation(GeoPoint geo_point, Date time_stamp, User user) {

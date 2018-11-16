@@ -75,7 +75,8 @@
             android:required="false" />
 
 
-
+        <service android:name=".services.LocationService"
+            android:stopWithTask="true"/>
     </application>
 
 </manifest>

@@ -13,6 +13,22 @@
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyAMHwH-qWDch7m66UeX-DiIYl7_vGGkJ84</string>
 
 
+    <!--Strings to name buttons in issue activity-->
+    <string name="danger_textView">Zagrożenia na trasie:</string>
+    <string name="animals_button">Zwierzęta</string>
+    <string name="avalanche_button">Lawina</string>
+    <string name="landslide_button">Osuwisko</string>
+    <string name="ice_button">Oblodzenie</string>
+    <string name="rocks_button">Spadające kamienie</string>
+    <string name="overhang_button">Nawis</string>
+
+    <string name="pass_textView">Brak przejścia:</string>
+    <string name="track_button">Uszkodzona trasa</string>
+    <string name="tree_button">Powalone drzewo</string>
+    <string name="bridge_button">Zerwany most</string>
+
+
+
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password (optional)</string>
@@ -39,6 +55,7 @@
     <string name="collection_chat_messages">Chat Messages</string>
     <string name="collection_chatroom_user_list">User List</string>
     <string name="collection_user_locations">User Locations</string>
+    <string name="collection_events">Events</string>
 
     <!-- Intent extras -->
     <string name="intent_chatroom">intent_chatroom</string>

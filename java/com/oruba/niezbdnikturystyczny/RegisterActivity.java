@@ -80,10 +80,10 @@ public class RegisterActivity extends AppCompatActivity implements
                             user.setUsername(email.substring(0, email.indexOf("@")));
                             user.setUser_id(FirebaseAuth.getInstance().getUid());
 
-                            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                                    .setTimestampsInSnapshotsEnabled(true)
-                                    .build();
-                            mDb.setFirestoreSettings(settings);
+//                            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+//                                    .setTimestampsInSnapshotsEnabled(true)
+//                                    .build();
+//                            mDb.setFirestoreSettings(settings);
 
                             DocumentReference newUserRef = mDb
                                     .collection(getString(R.string.collection_users))

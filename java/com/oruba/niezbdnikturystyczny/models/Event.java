@@ -12,25 +12,30 @@ import java.util.Date;
 public class Event implements Parcelable {
 
     private GeoPoint geo_point;
-    private String event;
-    private String avatar;
-    private String event_id;
-    private @ServerTimestamp Date time_stamp;
+    private String event_name;
+    private int avatar;
 
-    public Event(GeoPoint geo_point, String event, String avatar, Date time_stamp, String event_id) {
+
+
+    private String event_id;
+    private @ServerTimestamp Date add_date;
+    private User user;
+
+    public Event(GeoPoint geo_point, String event_name, int avatar, Date add_date, String event_id, User user) {
         this.geo_point = geo_point;
-        this.event = event;
+        this.event_name = event_name;
         this.avatar = avatar;
-        this.time_stamp = time_stamp;
+        this.add_date = add_date;
         this.event_id = event_id;
+        this.user = user;
     }
 
     public Event() {
     }
 
     protected Event(Parcel in) {
-        event = in.readString();
-        avatar = in.readString();
+        event_name = in.readString();
+        avatar = in.readInt();
         event_id = in.readString();
     }
 
@@ -54,37 +59,53 @@ public class Event implements Parcelable {
         this.geo_point = geo_point;
     }
 
-    public String getEvent() {
-        return event;
-    }
-
-    public void setEvent(String event) {
-        this.event = event;
-    }
-
-    public String getAvatar() {
+    public int getAvatar() {
         return avatar;
     }
 
-    public void setAvatar(String avatar) {
+    public void setAvatar(int avatar) {
         this.avatar = avatar;
     }
 
-    public Date getTime_stamp() {
-        return time_stamp;
+    public Date getAdd_date() {
+        return add_date;
     }
 
-    public void setTime_stamp(Date time_stamp) {
-        this.time_stamp = time_stamp;
+    public void setAdd_date(Date time_stamp) {
+        this.add_date = time_stamp;
+    }
+
+    public User getEventUser() {
+        return user;
+    }
+
+    public void setEventUser(User user) {
+        this.user = user;
+    }
+
+    public String getEvent_name() {
+        return event_name;
+    }
+
+    public void setEvent_name(String event_name) {
+        this.event_name = event_name;
+    }
+
+    public String getEvent_id() {
+        return event_id;
+    }
+
+    public void setEvent_id(String event_id) {
+        this.event_id = event_id;
     }
 
     @Override
     public String toString() {
         return "Event{" +
                 "geo_point=" + geo_point +
-                ", name='" + event + '\'' +
+                ", name='" + event_name + '\'' +
                 ", avatar='" + avatar + '\'' +
-                ", time_stamp=" + time_stamp +
+                ", time_stamp=" + add_date +
                 '}';
     }
 
@@ -95,8 +116,8 @@ public class Event implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(event);
+        dest.writeString(event_name);
         dest.writeString(event_id);
-        dest.writeString(avatar);
+        dest.writeInt(avatar);
     }
 }
