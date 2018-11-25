@@ -3,6 +3,10 @@ package com.oruba.niezbdnikturystyczny;
 import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -20,9 +24,11 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -40,6 +46,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -65,8 +72,10 @@ import com.oruba.niezbdnikturystyczny.models.PolylineData;
 import com.oruba.niezbdnikturystyczny.models.UserLocation;
 import com.oruba.niezbdnikturystyczny.util.MyClusterManagerRenderer;
 import com.oruba.niezbdnikturystyczny.util.ViewWeightAnimationWrapper;
-
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -97,6 +106,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private double hillLatitude;
     private double hillLongitude;
     private String hillName;
+    private double eventLatitude;
+    private double eventLongitude;
+    private String eventName;
     private double currentLatitude;
     private double currentLongitude;
     LatLngBounds mMapBoundary;
@@ -109,6 +121,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ListenerRegistration mEventListener;
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
+    private int updatingStarted = 0;
+    private int firstOpening = 0;
+    SimpleDateFormat sfd = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+
 
     private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
     private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
@@ -177,15 +193,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         };
 
-        hillName = getIntent().getStringExtra("HILL_NAME");
-        hillLatitude = getIntent().getDoubleExtra("HILL_LATITUDE", 0);
-        hillLongitude = getIntent().getDoubleExtra("HILL_LONGITUDE", 0);
 
-        Log.d("NavigateActivity", "Hill latitude: " + hillLatitude + ", hill longitude " + hillLongitude);
 
     }
 
-    private void getUserPosition(final Marker marker) {
+    private void getUserPosition(final LatLng marker) {
 
         String id = FirebaseAuth.getInstance().getUid();
         if (id != null) {
@@ -223,14 +235,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
 
-    private void calculateDirections(Marker marker) {
+    private void calculateDirections(LatLng marker) {
         Log.d(TAG, "calculateDirections: calculating directions");
 
         if(mUserLocations.size() > 0) {
 
             com.google.maps.model.LatLng destination = new com.google.maps.model.LatLng(
-                    marker.getPosition().latitude,
-                    marker.getPosition().longitude
+                    marker.latitude,
+                    marker.longitude
             );
 
             DirectionsApiRequest directions = new DirectionsApiRequest(mGeoApiContext);
@@ -422,13 +434,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     private void setCameraView() {
+        if (hillLongitude == 0 && hillLatitude == 0){
+            hillLatitude = this.getIntent().getDoubleExtra("EVENT_LATITUDE", 0);
+            hillLongitude = this.getIntent().getDoubleExtra("EVENT_LONGITUDE", 0);
+        }
         double bottomBoundary = hillLatitude - 0.005;
-        double leftBounday = hillLongitude - 0.005;
+        double leftBoundary = hillLongitude - 0.005;
         double topBoundary = hillLatitude + 0.005;
         double rightBoundary = hillLongitude + 0.005;
 
         mMapBoundary = new LatLngBounds(
-                new LatLng(bottomBoundary, leftBounday),
+                new LatLng(bottomBoundary, leftBoundary),
                 new LatLng(topBoundary, rightBoundary)
         );
 
@@ -442,10 +458,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         Log.d(TAG, "onMapReady: Jestem w onMapReady!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         mMap = googleMap;
+        getHillParams();
         getEventsFromDB();
-        Marker hillMarker = mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(hillLatitude, hillLongitude)));
-        setCameraView();
+        LatLng hillMarker =  new LatLng(hillLatitude, hillLongitude);
+        mMapView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                setCameraView();
+                mMapView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                firstOpening = 1;
+            }
+        });
         getUserPosition(hillMarker);
         //calculateDirections(hillMarker);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -456,6 +479,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnPolylineClickListener(this);
 
     }
+
 
     private void addMapMarkers(){
         if (mMap != null){
@@ -475,14 +499,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 try {
                     Log.d(TAG, "addMapMarkers: dodaję markery na mapę: " + events.getAdd_date());
                     String snippet;
-                    snippet = "Data wystąpienia: " + events.getAdd_date();
+                    snippet = "Data wystąpienia: " + sfd.format(events.getAdd_date()) + "\nKliknij aby potwierdzić." ;
                     int avatar = events.getAvatar();
 
                     ClusterMarker newClusterMarker = new ClusterMarker(
                             new LatLng(events.getGeo_point().getLatitude(),events.getGeo_point().getLongitude()),
                             events.getEvent_name(),
                             snippet,
-                            avatar
+                            avatar,
+                            events.getEvent_id()
                     );
                     mClusterManager.addItem(newClusterMarker);
                     mClusterMarkers.add(newClusterMarker);
@@ -495,10 +520,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void getEventsFromDB(){
+
         CollectionReference getEventsRef = mDb.collection(getString(R.string.collection_events));
+        // Converting current date - 1 day to Firebase Timestamp format
+        Date date = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime ( date ); // convert your date to Calendar object
+        int daysToDecrement = -1;
+        cal.add(Calendar.DATE, daysToDecrement);
+        date = cal.getTime();
+        Timestamp ts = new Timestamp(date);
+
+
 
         mEventListener = getEventsRef
                 .orderBy("add_date", Query.Direction.ASCENDING)
+                .whereGreaterThan("add_date", ts)
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
@@ -507,12 +544,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             return;
                         }
 
+
+
+
                         if(queryDocumentSnapshots != null){
                             for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
 
                                 try{
                                     Event event = doc.toObject(Event.class);
                                     if(!mEventsIds.contains(event.getEvent_id())){
+                                        if(updatingStarted == 1){
+
+                                            Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                                                    .putExtra("EVENT_LATITUDE", event.getGeo_point().getLatitude())
+                                                    .putExtra("EVENT_LONGITUDE", event.getGeo_point().getLongitude())
+                                                    .putExtra("EVENT_NAME", event.getEvent_name());
+                                            final PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0 , intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+                                            String CHANNEL_ID = "my_channel_01";
+                                            NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+                                                    .setSmallIcon(event.getAvatar())
+                                                    .setContentTitle(getString(R.string.new_issue_title))
+                                                    .setContentText(getString(R.string.new_issue_content))
+                                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                                                    .setContentIntent(pendingIntent)
+                                                    .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
+                                                    .setAutoCancel(true);
+                                            NotificationManager notificationManagerCompat = (NotificationManager) getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
+                                            notificationManagerCompat.notify(1, builder.build());
+                                        }
                                         mEventsIds.add(event.getEvent_id());
                                         mEvents.add(event);
                                         Log.d(TAG, "onEvent: " + event.getEvent_name());
@@ -522,6 +583,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 }
                             }
                             addMapMarkers();
+                            updatingStarted = 1;
                         }
                     }
                 });
@@ -559,6 +621,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    public void getHillParams(){
+        hillName = getIntent().getStringExtra("HILL_NAME");
+        hillLatitude = getIntent().getDoubleExtra("HILL_LATITUDE", 0);
+        hillLongitude = getIntent().getDoubleExtra("HILL_LONGITUDE", 0);
+
+        Log.d("NavigateActivity", "Hill latitude: " + hillLatitude + ", hill longitude " + hillLongitude);
+    }
+
+    protected void onNewIntent(Intent newIntent) {
+
+        Log.d(TAG, "onNewIntent: pobieram nowy event");
+        this.setIntent(newIntent);
+        eventName = this.getIntent().getStringExtra("EVENT_NAME");
+        eventLatitude = this.getIntent().getDoubleExtra("EVENT_LATITUDE", 0);
+        eventLongitude = this.getIntent().getDoubleExtra("EVENT_LONGITUDE", 0);
+        final LatLng newEvent = new LatLng(
+                eventLatitude,
+                eventLongitude
+        );
+        mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(newEvent, 12));
+            }
+        });
+    }
+
 
 
 
@@ -582,6 +671,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMapView.onDestroy();
         super.onDestroy();
         stopLocationUpdates();
+        mEvents = new ArrayList<>();
+        mEventsIds = new HashSet<>();
 
     }
 
@@ -708,6 +799,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             final AlertDialog alert = dialogBuilder.create();
             alert.show();
         }
+        else{
+            final AlertDialog.Builder eventDialogBuilder = new AlertDialog.Builder(this)
+                    .setMessage(getString(R.string.event_confirmation))
+                    .setCancelable(true)
+                    .setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") int id) {
+                            Date date = new Date();
+                            Timestamp ts = new Timestamp(date);
+                            try {
+                                for (final ClusterMarker clusterMarker : mClusterMarkers) {
+                                    if(clusterMarker.getPosition().latitude == marker.getPosition().latitude && clusterMarker.getPosition().longitude == marker.getPosition().longitude) {
+                                        DocumentReference documentReference = mDb.collection(getString(R.string.collection_events))
+                                                .document(clusterMarker.getEventId());
+
+                                        documentReference.update("add_date",ts);
+                                    }
+                                }
+                            }catch (NullPointerException e) {
+                                Log.e(TAG, "retrieveUserLocations: NullPointerException: " + e.getMessage());
+                            }
+                        }
+                    })
+                    .setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, @SuppressWarnings("unused") int id) {
+                            dialog.cancel();
+                        }
+                    });
+            final AlertDialog alert = eventDialogBuilder.create();
+            alert.show();
+        }
     }
+
 }
 

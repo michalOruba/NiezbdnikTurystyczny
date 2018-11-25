@@ -26,6 +26,9 @@
     <string name="track_button">Uszkodzona trasa</string>
     <string name="tree_button">Powalone drzewo</string>
     <string name="bridge_button">Zerwany most</string>
+    <string name="new_issue_title">Nowe wydarzenie</string>
+    <string name="new_issue_content">Pojawiło się nowe wydarzenie. Dotknij aby sprawdzić.</string>
+    <string name="event_confirmation">Czy potwierdzasz wystąpienie zdarzenia?</string>
 
 
 
