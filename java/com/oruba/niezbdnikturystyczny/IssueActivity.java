@@ -36,8 +36,6 @@ public class IssueActivity extends Activity implements View.OnClickListener{
             trackButton, treeButton, bridgeButton;
     private FirebaseFirestore mDb;
     Event event = new Event();
-    String eventName;
-    String eventAvatar;
 
 
 
@@ -76,100 +74,109 @@ public class IssueActivity extends Activity implements View.OnClickListener{
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.animalsButton:
-                Toast.makeText(this, "Klikam animalsButton", Toast.LENGTH_SHORT).show();
                 event.setEvent_name(getString(R.string.animals_button));
-                event.setAvatar(R.drawable.cartman_cop);
+                event.setAvatar(R.drawable.ic_animals);
                 event.setAdd_date(null);
+                Toast.makeText(this, "Wydarzenie " + getString(R.string.animals_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.avalancheButton:
-                Toast.makeText(this, "Klikam avalancheButton", Toast.LENGTH_SHORT).show();
                 event.setEvent_name(getString(R.string.avalanche_button));
-                event.setAvatar(R.drawable.chef);
+                event.setAvatar(R.drawable.ic_avalanche);
                 event.setAdd_date(null);
+                Toast.makeText(this, "Wydarzenie " + getString(R.string.avalanche_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.landslideButton:
-                Toast.makeText(this, "Klikam landslideButton", Toast.LENGTH_SHORT).show();
                 event.setEvent_name(getString(R.string.landslide_button));
-                event.setAvatar(R.drawable.eric_cartman);
+                event.setAvatar(R.drawable.ic_landslide);
                 event.setAdd_date(null);
+                Toast.makeText(this, "Wydarzenie " + getString(R.string.landslide_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.iceButton:
-                Toast.makeText(this, "Klikam iceButton", Toast.LENGTH_SHORT).show();
                 event.setEvent_name(getString(R.string.ice_button));
-                event.setAvatar(R.drawable.ike);
+                event.setAvatar(R.drawable.ic_slippery);
                 event.setAdd_date(null);
+                Toast.makeText(this, "Wydarzenie " + getString(R.string.ice_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.rocksButton:
-                Toast.makeText(this, "Klikam rocksButton", Toast.LENGTH_SHORT).show();
                 event.setEvent_name(getString(R.string.rocks_button));
-                event.setAvatar(R.drawable.kyle);
+                event.setAvatar(R.drawable.ic_rocks);
                 event.setAdd_date(null);
+                Toast.makeText(this, "Wydarzenie " + getString(R.string.rocks_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.overhangButton:
-                Toast.makeText(this, "Klikam overhangButton", Toast.LENGTH_SHORT).show();
                 event.setEvent_name(getString(R.string.overhang_button));
-                event.setAvatar(R.drawable.tweek);
+                event.setAvatar(R.drawable.ic_overhang);
                 event.setAdd_date(null);
+                Toast.makeText(this, "Wydarzenie " + getString(R.string.overhang_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.trackButton:
-                Toast.makeText(this, "Klikam trackButton", Toast.LENGTH_SHORT).show();
                 event.setEvent_name(getString(R.string.track_button));
-                event.setAvatar(R.drawable.satan);
+                event.setAvatar(R.drawable.ic_track);
                 event.setAdd_date(null);
+                Toast.makeText(this, "Wydarzenie " + getString(R.string.track_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.treeButton:
-                Toast.makeText(this, "Klikam treeButton", Toast.LENGTH_SHORT).show();
                 event.setEvent_name(getString(R.string.tree_button));
-                event.setAvatar(R.drawable.icons8_route_48);
+                event.setAvatar(R.drawable.ic_tree);
                 event.setAdd_date(null);
+                Toast.makeText(this, "Wydarzenie " + getString(R.string.tree_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.bridgeButton:
-                Toast.makeText(this, "Klikam bridgeButton", Toast.LENGTH_SHORT).show();
                 event.setEvent_name(getString(R.string.bridge_button));
-                event.setAvatar(R.drawable.icons8_info_48);
+                event.setAvatar(R.drawable.ic_bridge);
                 event.setAdd_date(null);
+                Toast.makeText(this, "Wydarzenie " + getString(R.string.bridge_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                 break;
         }
         getUserDetailInformation();
     }
 
     private void getUserDetailInformation() {
-        DocumentReference userRef = mDb.collection(getString(R.string.collection_users))
-                .document(FirebaseAuth.getInstance().getUid());
+        try {
+            DocumentReference userRef = mDb.collection(getString(R.string.collection_users))
+                    .document(FirebaseAuth.getInstance().getUid());
 
-        userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    Log.d(TAG, "onComplete: successfully get the user details.");
+            userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "onComplete: successfully get the user details.");
 
 
-                    User user = task.getResult().toObject(User.class);
-                    event.setEventUser(user);
+                        User user = task.getResult().toObject(User.class);
+                        event.setEventUser(user);
 
-                    getUsersCurrentPosition();
+                        getUsersCurrentPosition();
+                    }
                 }
-            }
-        });
+            });
+        }catch (NullPointerException e){
+            Toast.makeText(this, "Niespodziewany błąd.", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "getUsersCurrentPosition: NullPointerException: " + e.getMessage());
+        }
     }
 
     private void getUsersCurrentPosition() {
 
         Log.d(TAG, "getUsersCurrentPosition: Getting Users current location to add issue");
-
-        DocumentReference docRef = mDb.collection(getString(R.string.collection_user_locations))
-                .document(FirebaseAuth.getInstance().getUid());
-        docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    Log.d(TAG, "onComplete: successfully got users location");
-                    UserLocation userLocation = task.getResult().toObject(UserLocation.class);
-                    event.setGeo_point(userLocation.getGeo_point());
-                    setIssueOnCurrentLocation();
+        try {
+            DocumentReference docRef = mDb.collection(getString(R.string.collection_user_locations))
+                    .document(FirebaseAuth.getInstance().getUid());
+            docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "onComplete: successfully got users location");
+                        UserLocation userLocation = task.getResult().toObject(UserLocation.class);
+                        event.setGeo_point(userLocation.getGeo_point());
+                        setIssueOnCurrentLocation();
+                    }
                 }
-            }
-        });
+            });
+        }catch (NullPointerException e ){
+            Toast.makeText(this, "Niespodziewany błąd.", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "getUsersCurrentPosition: NullPointerException: " + e.getMessage());
+        }
     }
 
     private void setIssueOnCurrentLocation() {

@@ -6,8 +6,9 @@
     android:layout_width="300dp"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
+    android:layout_marginBottom="8dp"
     android:background="#232323"
-    android:layout_marginBottom="8dp">
+    android:maxHeight="450dp">
 
     <ImageView
         android:id="@+id/desc_navigation_image"
@@ -15,51 +16,89 @@
         android:layout_height="120dp"
         android:scaleType="fitXY"
         android:src="@drawable/ic_launcher_background"
+        app:layout_constraintBottom_toTopOf="@+id/horizontal_dialog_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/desc_navigation_hill_name"
-        android:layout_width="120dp"
+    <RelativeLayout
+        android:id="@+id/horizontal_dialog_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Szczyt"
-        android:textColor="@color/white"
-        android:textSize="20dp"
-        android:textStyle="bold"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/scrolltext"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/desc_navigation_image" />
+        app:layout_constraintTop_toBottomOf="@+id/desc_navigation_image">
 
-    <TextView
-        android:id="@+id/desc_navigation_hill_height"
-        android:layout_width="120dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Wysokość"
-        android:textColor="@color/white"
-        android:textSize="20dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/desc_navigation_image" />
+        <TextView
+            android:id="@+id/desc_navigation_hill_name"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Szczyt"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
+        <TextView
+            android:id="@+id/desc_navigation_hill_height"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_gravity="center"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Wysokość"
+            android:textColor="@color/white"
+            android:textSize="20sp" />
+    </RelativeLayout>
 
-    <TextView
-        android:id="@+id/desc_navigation_hill_description"
+    <ScrollView
+        android:id="@+id/scrolltext"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:textColor="@color/white"
-        android:textSize="16dp"
-        android:scrollbars="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/desc_navigation_hill_name" />
+        app:layout_constraintTop_toBottomOf="@+id/horizontal_dialog_layout">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/desc_navigation_hill_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:maxHeight="200dp"/>
+
+            <Button
+                android:id="@+id/navigation_dialog_button"
+                android:layout_width="70dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                android:background="@drawable/my_button"
+                android:text="Nawiguj"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:layout_below="@id/desc_navigation_hill_description"
+                android:layout_centerHorizontal="true"/>
+        </RelativeLayout>
+    </ScrollView>
 
 </android.support.constraint.ConstraintLayout>
 

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/White">
 
     <TextView
         android:id="@+id/textView4"
@@ -17,13 +17,14 @@
         android:text="@string/danger_textView"
         android:textSize="28sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        android:background="@color/White"
+        app:layout_constraintBottom_toTopOf="@+id/helpLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
-        android:id="@+id/linearLayout"
+        android:id="@+id/helpLayout"
         android:layout_width="match_parent"
         android:layout_height="120dp"
         android:layout_marginBottom="8dp"
@@ -31,6 +32,8 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:background="@color/White"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -41,15 +44,17 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/White">
 
             <ImageButton
                 android:id="@+id/animalsButton"
                 android:layout_width="50dp"
-                android:layout_height="40dp"
+                android:layout_height="50dp"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
-                android:src="@drawable/ic_launcher_foreground" />
+                android:src="@drawable/ic_animals"
+                android:contentDescription="@string/animals_button"/>
 
             <TextView
                 android:id="@+id/animalsTextView"
@@ -57,7 +62,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:text="@string/animals_button" />
+                android:text="@string/animals_button"
+                android:textStyle="italic"/>
         </LinearLayout>
 
         <LinearLayout
@@ -65,15 +71,17 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/White">
 
             <ImageButton
                 android:id="@+id/avalancheButton"
                 android:layout_width="50dp"
-                android:layout_height="40dp"
+                android:layout_height="50dp"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
-                android:src="@drawable/ic_launcher_foreground" />
+                android:src="@drawable/ic_avalanche"
+                android:contentDescription="@string/avalanche_button"/>
 
             <TextView
                 android:id="@+id/avalancheTextView"
@@ -81,7 +89,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:text="@string/avalanche_button" />
+                android:text="@string/avalanche_button"
+                android:textStyle="italic"/>
         </LinearLayout>
 
         <LinearLayout
@@ -89,15 +98,17 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/White">
 
             <ImageButton
                 android:id="@+id/landslideButton"
                 android:layout_width="50dp"
-                android:layout_height="40dp"
+                android:layout_height="50dp"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
-                android:src="@drawable/ic_launcher_foreground" />
+                android:src="@drawable/ic_landslide"
+                android:contentDescription="@string/landslide_button"/>
 
             <TextView
                 android:id="@+id/landslideTextView"
@@ -105,7 +116,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:text="@string/landslide_button" />
+                android:text="@string/landslide_button"
+                android:textStyle="italic"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -118,25 +130,29 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:background="@color/White"
         app:layout_constraintBottom_toTopOf="@+id/textView3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+        app:layout_constraintTop_toBottomOf="@+id/helpLayout">
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/White">
 
             <ImageButton
                 android:id="@+id/iceButton"
                 android:layout_width="50dp"
-                android:layout_height="40dp"
+                android:layout_height="50dp"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
-                android:src="@drawable/ic_launcher_foreground" />
+                android:src="@drawable/ic_slippery"
+                android:contentDescription="@string/ice_button"/>
 
             <TextView
                 android:id="@+id/iceTextView"
@@ -144,7 +160,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:text="@string/ice_button" />
+                android:text="@string/ice_button"
+                android:textStyle="italic"/>
         </LinearLayout>
 
         <LinearLayout
@@ -152,15 +169,17 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/White">
 
             <ImageButton
                 android:id="@+id/rocksButton"
                 android:layout_width="50dp"
-                android:layout_height="40dp"
+                android:layout_height="50dp"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
-                android:src="@drawable/ic_launcher_foreground" />
+                android:src="@drawable/ic_rocks"
+                android:contentDescription="@string/rocks_button"/>
 
             <TextView
                 android:id="@+id/rocksTextView"
@@ -168,7 +187,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:text="@string/rocks_button" />
+                android:text="@string/rocks_button"
+                android:textStyle="italic"/>
         </LinearLayout>
 
         <LinearLayout
@@ -176,15 +196,17 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/White">
 
             <ImageButton
                 android:id="@+id/overhangButton"
                 android:layout_width="50dp"
-                android:layout_height="40dp"
+                android:layout_height="50dp"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
-                android:src="@drawable/ic_launcher_foreground" />
+                android:src="@drawable/ic_overhang"
+                android:contentDescription="@string/overhang_button"/>
 
             <TextView
                 android:id="@+id/overhangTextView"
@@ -192,7 +214,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:text="@string/overhang_button" />
+                android:text="@string/overhang_button"
+                android:textStyle="italic"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -222,6 +245,8 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:orientation="horizontal"
+        android:baselineAligned="false"
+        android:background="@color/White"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
@@ -233,15 +258,17 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/White">
 
             <ImageButton
                 android:id="@+id/trackButton"
                 android:layout_width="50dp"
-                android:layout_height="40dp"
+                android:layout_height="50dp"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
-                android:src="@drawable/ic_launcher_foreground" />
+                android:src="@drawable/ic_track"
+                android:contentDescription="@string/track_button"/>
 
             <TextView
                 android:id="@+id/trackTextView"
@@ -249,7 +276,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:text="@string/track_button" />
+                android:text="@string/track_button"
+                android:textStyle="italic"/>
         </LinearLayout>
 
         <LinearLayout
@@ -257,15 +285,17 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/White">
 
             <ImageButton
                 android:id="@+id/treeButton"
                 android:layout_width="50dp"
-                android:layout_height="40dp"
+                android:layout_height="50dp"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
-                android:src="@drawable/ic_launcher_foreground" />
+                android:src="@drawable/ic_tree"
+                android:contentDescription="@string/tree_button"/>
 
             <TextView
                 android:id="@+id/treeTextView"
@@ -273,7 +303,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:text="@string/tree_button" />
+                android:text="@string/tree_button"
+                android:textStyle="italic"/>
         </LinearLayout>
 
         <LinearLayout
@@ -281,15 +312,17 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@color/White">
 
             <ImageButton
                 android:id="@+id/bridgeButton"
                 android:layout_width="50dp"
-                android:layout_height="40dp"
+                android:layout_height="50dp"
                 android:layout_marginBottom="8dp"
                 android:layout_marginTop="8dp"
-                android:src="@drawable/ic_launcher_foreground" />
+                android:src="@drawable/ic_bridge"
+                android:contentDescription="@string/tree_button"/>
 
             <TextView
                 android:id="@+id/bridgeTextView"
@@ -297,7 +330,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:gravity="center"
-                android:text="@string/bridge_button" />
+                android:text="@string/bridge_button"
+                android:textStyle="italic"/>
         </LinearLayout>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

@@ -9,16 +9,19 @@ import com.google.firebase.firestore.ServerTimestamp;
 
 import java.util.Date;
 
-public class Event implements Parcelable {
+public class HelpEvent implements Parcelable {
 
     private GeoPoint geo_point;
     private String event_name;
     private int avatar;
+
+
+
     private String event_id;
     private @ServerTimestamp Date add_date;
     private User user;
 
-    public Event(GeoPoint geo_point, String event_name, int avatar, Date add_date, String event_id, User user) {
+    public HelpEvent(GeoPoint geo_point, String event_name, int avatar, Date add_date, String event_id, User user) {
         this.geo_point = geo_point;
         this.event_name = event_name;
         this.avatar = avatar;
@@ -27,24 +30,24 @@ public class Event implements Parcelable {
         this.user = user;
     }
 
-    public Event() {
+    public HelpEvent() {
     }
 
-    protected Event(Parcel in) {
+    protected HelpEvent(Parcel in) {
         event_name = in.readString();
         avatar = in.readInt();
         event_id = in.readString();
     }
 
-    public static final Creator<Event> CREATOR = new Creator<Event>() {
+    public static final Creator<HelpEvent> CREATOR = new Creator<HelpEvent>() {
         @Override
-        public Event createFromParcel(Parcel in) {
-            return new Event(in);
+        public HelpEvent createFromParcel(Parcel in) {
+            return new HelpEvent(in);
         }
 
         @Override
-        public Event[] newArray(int size) {
-            return new Event[size];
+        public HelpEvent[] newArray(int size) {
+            return new HelpEvent[size];
         }
     };
 

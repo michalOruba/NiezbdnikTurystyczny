@@ -42,6 +42,7 @@ public class RegisterActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         mEmail = (EditText) findViewById(R.id.input_email);
@@ -80,10 +81,6 @@ public class RegisterActivity extends AppCompatActivity implements
                             user.setUsername(email.substring(0, email.indexOf("@")));
                             user.setUser_id(FirebaseAuth.getInstance().getUid());
 
-//                            FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-//                                    .setTimestampsInSnapshotsEnabled(true)
-//                                    .build();
-//                            mDb.setFirestoreSettings(settings);
 
                             DocumentReference newUserRef = mDb
                                     .collection(getString(R.string.collection_users))
@@ -159,11 +156,11 @@ public class RegisterActivity extends AppCompatActivity implements
                         //Initiate registration task
                         registerNewEmail(mEmail.getText().toString(), mPassword.getText().toString());
                     }else{
-                        Toast.makeText(RegisterActivity.this, "Passwords do not Match", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, "Hasła nie są takie same", Toast.LENGTH_SHORT).show();
                     }
 
                 }else{
-                    Toast.makeText(RegisterActivity.this, "You must fill out all the fields", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, "Musisz wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
                 }
                 break;
             }

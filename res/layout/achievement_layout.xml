@@ -5,13 +5,87 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Achevement Layout"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/hills_status_summer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:shadowColor="#000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="2.5"
+            android:text="@string/summer"
+            android:textColor="@color/DarkGrey"
+            android:textSize="20sp"
+            android:textStyle="bold|italic" />
+
+        <TextView
+            android:id="@+id/hills_status_summer_numbers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:shadowColor="#000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="2.5"
+            android:text="1/169 0,6%"
+            android:textColor="@color/DarkGrey"
+            android:textSize="20sp"
+            android:textStyle="bold|italic" />
+
+        <TextView
+            android:id="@+id/hills_status_winter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:shadowColor="#000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="2.5"
+            android:text="@string/winter"
+            android:textColor="@color/DarkGrey"
+            android:textSize="20sp"
+            android:textStyle="bold|italic" />
+
+        <TextView
+            android:id="@+id/hills_status_winter_numbers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:shadowColor="#000"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="2.5"
+            android:text="1/169 0,6%"
+            android:textColor="@color/DarkGrey"
+            android:textSize="20sp"
+            android:textStyle="bold|italic" />
+
+    </LinearLayout>
+
+    <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/navigation_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:divider="@color/white"
+        android:dividerHeight="1dp"
+        android:drawSelectorOnTop="true"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 </android.support.constraint.ConstraintLayout>

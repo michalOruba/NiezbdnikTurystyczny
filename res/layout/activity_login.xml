@@ -1,20 +1,20 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 
     <ScrollView
         android:id="@+id/login_form"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:id="@+id/email_login_form"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:layout_marginTop="20dp"
+            android:orientation="vertical"
             android:padding="20dp">
 
 
@@ -25,18 +25,17 @@
                 android:layout_marginTop="20dp"
                 android:hint="@string/prompt_email"
                 android:inputType="textEmailAddress"
-                android:maxLines="1"/>
+                android:maxLines="1" />
 
 
             <EditText
                 android:id="@+id/password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/password"
                 android:layout_marginTop="20dp"
+                android:hint="@string/password"
                 android:inputType="textPassword"
-                android:maxLines="1"
-                />
+                android:maxLines="1" />
 
             <Button
                 android:id="@+id/email_sign_in_button"
@@ -44,39 +43,70 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
+                android:background="@drawable/theme_button"
                 android:text="@string/sign_in"
-                android:textStyle="bold"
-                android:background="@drawable/theme_button"/>
+                android:textStyle="bold" />
 
             <RelativeLayout
+                android:id="@+id/relLayout1"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/relLayout1">
+                android:layout_height="wrap_content">
 
 
-                <TextView android:id="@+id/link_register"
+                <TextView
+                    android:id="@+id/link_register"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
                     android:layout_marginTop="20dp"
-                    android:text="@string/register"
                     android:gravity="center"
-                    android:textSize="16sp"
+                    android:text="@string/register"
                     android:textColor="@color/linkBlue"
-                    android:layout_centerHorizontal="true"/>
+                    android:textSize="16sp" />
 
 
             </RelativeLayout>
 
         </LinearLayout>
 
+
     </ScrollView>
 
-    <ProgressBar
+    <com.facebook.login.widget.LoginButton
+        android:id="@+id/fb_login_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/progressBar"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="200dp"
-        android:visibility="invisible"/>
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_form" />
 
-</RelativeLayout>
+    <com.google.android.gms.common.SignInButton
+        android:id="@+id/google_login_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="36dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/fb_login_button" />
+
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</android.support.constraint.ConstraintLayout>

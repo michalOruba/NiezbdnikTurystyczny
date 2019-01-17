@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation_item_container"
+    android:layout_width="match_parent"
+    android:layout_height="150dp">
+
+    <ImageView
+        android:id="@+id/achievement_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_launcher_background"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/achievement_hill_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:shadowColor="#000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="2.5"
+        android:text="Szczyt"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/achievement_hill_height"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:shadowColor="#000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="2.5"
+        android:text="Wysokość"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/achievement_hill_name" />
+
+    <TextView
+        android:id="@+id/achievement_hill_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:shadowColor="#000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="2.5"
+        android:text="Data"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/achievement_hill_height" />
+
+    <TextView
+        android:id="@+id/achievement_hill_summer"
+        android:layout_width="52dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="16dp"
+        android:shadowColor="#000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="2.5"
+        android:text="@string/summer"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toStartOf="@+id/achievement_hill_summer_status"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/achievement_hill_winter"
+        android:layout_width="52dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        android:layout_marginEnd="8dp"
+        android:shadowColor="#000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="2.5"
+        android:text="@string/winter"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/achievement_hill_winter_status" />
+
+    <TextView
+        android:id="@+id/achievement_hill_summer_status"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="16dp"
+        android:shadowColor="#000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="2.5"
+        android:text="Niezdobyty"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/achievement_hill_winter_status"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="18dp"
+        android:layout_marginEnd="8dp"
+        android:shadowColor="#000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="2.5"
+        android:text="Zdobyty"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+</android.support.constraint.ConstraintLayout>
