@@ -1,8 +1,12 @@
 package com.oruba.niezbdnikturystyczny;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -36,6 +40,7 @@ public class IssueActivity extends Activity implements View.OnClickListener{
             trackButton, treeButton, bridgeButton;
     private FirebaseFirestore mDb;
     Event event = new Event();
+    private long mLastClickTime = 0;
 
 
 
@@ -72,63 +77,73 @@ public class IssueActivity extends Activity implements View.OnClickListener{
     }
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.animalsButton:
-                event.setEvent_name(getString(R.string.animals_button));
-                event.setAvatar(R.drawable.ic_animals);
-                event.setAdd_date(null);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.animals_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.avalancheButton:
-                event.setEvent_name(getString(R.string.avalanche_button));
-                event.setAvatar(R.drawable.ic_avalanche);
-                event.setAdd_date(null);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.avalanche_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.landslideButton:
-                event.setEvent_name(getString(R.string.landslide_button));
-                event.setAvatar(R.drawable.ic_landslide);
-                event.setAdd_date(null);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.landslide_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.iceButton:
-                event.setEvent_name(getString(R.string.ice_button));
-                event.setAvatar(R.drawable.ic_slippery);
-                event.setAdd_date(null);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.ice_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.rocksButton:
-                event.setEvent_name(getString(R.string.rocks_button));
-                event.setAvatar(R.drawable.ic_rocks);
-                event.setAdd_date(null);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.rocks_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.overhangButton:
-                event.setEvent_name(getString(R.string.overhang_button));
-                event.setAvatar(R.drawable.ic_overhang);
-                event.setAdd_date(null);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.overhang_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.trackButton:
-                event.setEvent_name(getString(R.string.track_button));
-                event.setAvatar(R.drawable.ic_track);
-                event.setAdd_date(null);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.track_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.treeButton:
-                event.setEvent_name(getString(R.string.tree_button));
-                event.setAvatar(R.drawable.ic_tree);
-                event.setAdd_date(null);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.tree_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                break;
-            case R.id.bridgeButton:
-                event.setEvent_name(getString(R.string.bridge_button));
-                event.setAvatar(R.drawable.ic_bridge);
-                event.setAdd_date(null);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.bridge_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                break;
+        if (isNetworkAvailable()) {
+            if (SystemClock.elapsedRealtime() - mLastClickTime < 20000){
+                Toast.makeText(this, "Już dodałeś wydarzenie!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            mLastClickTime = SystemClock.elapsedRealtime();
+            switch (v.getId()) {
+                case R.id.animalsButton:
+                    event.setEvent_name(getString(R.string.animals_button));
+                    event.setAvatar(R.drawable.ic_animals);
+                    event.setAdd_date(null);
+                    Toast.makeText(this, "Wydarzenie " + getString(R.string.animals_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.avalancheButton:
+                    event.setEvent_name(getString(R.string.avalanche_button));
+                    event.setAvatar(R.drawable.ic_avalanche);
+                    event.setAdd_date(null);
+                    Toast.makeText(this, "Wydarzenie " + getString(R.string.avalanche_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.landslideButton:
+                    event.setEvent_name(getString(R.string.landslide_button));
+                    event.setAvatar(R.drawable.ic_landslide);
+                    event.setAdd_date(null);
+                    Toast.makeText(this, "Wydarzenie " + getString(R.string.landslide_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.iceButton:
+                    event.setEvent_name(getString(R.string.ice_button));
+                    event.setAvatar(R.drawable.ic_slippery);
+                    event.setAdd_date(null);
+                    Toast.makeText(this, "Wydarzenie " + getString(R.string.ice_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.rocksButton:
+                    event.setEvent_name(getString(R.string.rocks_button));
+                    event.setAvatar(R.drawable.ic_rocks);
+                    event.setAdd_date(null);
+                    Toast.makeText(this, "Wydarzenie " + getString(R.string.rocks_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.overhangButton:
+                    event.setEvent_name(getString(R.string.overhang_button));
+                    event.setAvatar(R.drawable.ic_overhang);
+                    event.setAdd_date(null);
+                    Toast.makeText(this, "Wydarzenie " + getString(R.string.overhang_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.trackButton:
+                    event.setEvent_name(getString(R.string.track_button));
+                    event.setAvatar(R.drawable.ic_track);
+                    event.setAdd_date(null);
+                    Toast.makeText(this, "Wydarzenie " + getString(R.string.track_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.treeButton:
+                    event.setEvent_name(getString(R.string.tree_button));
+                    event.setAvatar(R.drawable.ic_tree);
+                    event.setAdd_date(null);
+                    Toast.makeText(this, "Wydarzenie " + getString(R.string.tree_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                    break;
+                case R.id.bridgeButton:
+                    event.setEvent_name(getString(R.string.bridge_button));
+                    event.setAvatar(R.drawable.ic_bridge);
+                    event.setAdd_date(null);
+                    Toast.makeText(this, "Wydarzenie " + getString(R.string.bridge_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+            getUserDetailInformation();
         }
-        getUserDetailInformation();
+        else {
+            Toast.makeText(this, "Brak połączenia z Internetem.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void getUserDetailInformation() {
@@ -199,5 +214,11 @@ public class IssueActivity extends Activity implements View.OnClickListener{
                         }
                     });
         }
+    }
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

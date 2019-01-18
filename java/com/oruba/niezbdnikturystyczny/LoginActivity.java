@@ -1,6 +1,9 @@
 package com.oruba.niezbdnikturystyczny;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -155,25 +158,24 @@ public class LoginActivity extends AppCompatActivity implements
         if(!isEmpty(mEmail.getText().toString())
                 && !isEmpty(mPassword.getText().toString())){
             Log.d(TAG, "onClick: attempting to authenticate.");
+                showDialog();
 
-            showDialog();
+                FirebaseAuth.getInstance().signInWithEmailAndPassword(mEmail.getText().toString(),
+                        mPassword.getText().toString())
+                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
 
-            FirebaseAuth.getInstance().signInWithEmailAndPassword(mEmail.getText().toString(),
-                    mPassword.getText().toString())
-                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
+                                hideDialog();
 
-                            hideDialog();
-
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Toast.makeText(LoginActivity.this, "Autoryzacja nieudana", Toast.LENGTH_SHORT).show();
-                    hideDialog();
-                }
-            });
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(LoginActivity.this, "Autoryzacja nieudana", Toast.LENGTH_SHORT).show();
+                        hideDialog();
+                    }
+                });
         }else{
             Toast.makeText(LoginActivity.this, "Nie wypełniłeś wszystkich pól.", Toast.LENGTH_SHORT).show();
         }
@@ -185,6 +187,7 @@ public class LoginActivity extends AppCompatActivity implements
         LoginButton loginButton = findViewById(R.id.fb_login_button);
         loginButton.setReadPermissions("email", "public_profile");
         loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
+
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.d(TAG, "facebook:onSuccess:" + loginResult);
@@ -211,24 +214,27 @@ public class LoginActivity extends AppCompatActivity implements
 
             // Pass the activity result back to the Facebook SDK
 
+            if(isNetworkAvailable()) {
+                if (requestCode == RC_SIGN_IN) {
+                    // The Task returned from this call is always completed, no need to attach
+                    // a listener.
+                    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                    try {
+                        // Google Sign In was successful, authenticate with Firebase
+                        GoogleSignInAccount account = task.getResult(ApiException.class);
+                        firebaseAuthWithGoogle(account);
+                    } catch (ApiException e) {
+                        // Google Sign In failed, update UI appropriately
+                        Log.w(TAG, "Google sign in failed", e);
+                        // ...
+                    }
 
-            if (requestCode == RC_SIGN_IN) {
-                // The Task returned from this call is always completed, no need to attach
-                // a listener.
-                Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-                try {
-                    // Google Sign In was successful, authenticate with Firebase
-                    GoogleSignInAccount account = task.getResult(ApiException.class);
-                    firebaseAuthWithGoogle(account);
-                } catch (ApiException e) {
-                    // Google Sign In failed, update UI appropriately
-                    Log.w(TAG, "Google sign in failed", e);
-                    // ...
+                } else {
+                    mCallbackManager.onActivityResult(requestCode, resultCode, data);
                 }
-
             }
             else {
-                mCallbackManager.onActivityResult(requestCode, resultCode, data);
+                Toast.makeText(LoginActivity.this, "Brak połączenia z Internetem.", Toast.LENGTH_SHORT).show();
             }
 
         }
@@ -285,25 +291,30 @@ public class LoginActivity extends AppCompatActivity implements
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
-            case R.id.link_register:{
-                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-                startActivity(intent);
-                break;
-            }
+        if(isNetworkAvailable()) {
+            switch (view.getId()) {
+                case R.id.link_register: {
+                    Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                    startActivity(intent);
+                    break;
+                }
 
-            case R.id.email_sign_in_button:{
-                signIn();
-                break;
+                case R.id.email_sign_in_button: {
+                    signIn();
+                    break;
+                }
+                case R.id.fb_login_button: {
+                    signWithFB();
+                    break;
+                }
+                case R.id.google_login_button: {
+                    signWithGoogle();
+                    break;
+                }
             }
-            case R.id.fb_login_button:{
-                signWithFB();
-                break;
-            }
-            case R.id.google_login_button:{
-                signWithGoogle();
-                break;
-            }
+        }
+        else {
+            Toast.makeText(LoginActivity.this, "Brak połączenia z Internetem.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -360,5 +371,11 @@ public class LoginActivity extends AppCompatActivity implements
                             // ...
                         }
                     });
+    }
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

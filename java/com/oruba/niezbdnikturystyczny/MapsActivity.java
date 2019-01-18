@@ -15,6 +15,8 @@ import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -1007,37 +1009,48 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             alert.show();
         }
         else{
-            final AlertDialog.Builder eventDialogBuilder = new AlertDialog.Builder(this)
-                    .setMessage(getString(R.string.event_confirmation))
-                    .setCancelable(true)
-                    .setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") int id) {
-                            Date date = new Date();
-                            Timestamp ts = new Timestamp(date);
-                            try {
-                                for (final ClusterMarker clusterMarker : mClusterMarkers) {
-                                    if(clusterMarker.getPosition().latitude == marker.getPosition().latitude && clusterMarker.getPosition().longitude == marker.getPosition().longitude) {
-                                        DocumentReference documentReference = mDb.collection(getString(R.string.collection_events))
-                                                .document(clusterMarker.getEventId());
+            if(isNetworkAvailable()) {
+                final AlertDialog.Builder eventDialogBuilder = new AlertDialog.Builder(this)
+                        .setMessage(getString(R.string.event_confirmation))
+                        .setCancelable(true)
+                        .setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") int id) {
+                                Date date = new Date();
+                                Timestamp ts = new Timestamp(date);
+                                try {
+                                    for (final ClusterMarker clusterMarker : mClusterMarkers) {
+                                        if (clusterMarker.getPosition().latitude == marker.getPosition().latitude && clusterMarker.getPosition().longitude == marker.getPosition().longitude) {
+                                            DocumentReference documentReference = mDb.collection(getString(R.string.collection_events))
+                                                    .document(clusterMarker.getEventId());
 
-                                        documentReference.update("add_date",ts);
+                                            documentReference.update("add_date", ts);
+                                        }
                                     }
+                                } catch (NullPointerException e) {
+                                    Log.e(TAG, "retrieveUserLocations: NullPointerException: " + e.getMessage());
                                 }
-                            }catch (NullPointerException e) {
-                                Log.e(TAG, "retrieveUserLocations: NullPointerException: " + e.getMessage());
                             }
-                        }
-                    })
-                    .setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, @SuppressWarnings("unused") int id) {
-                            dialog.cancel();
-                        }
-                    });
-            final AlertDialog alert = eventDialogBuilder.create();
-            alert.show();
+                        })
+                        .setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, @SuppressWarnings("unused") int id) {
+                                dialog.cancel();
+                            }
+                        });
+                final AlertDialog alert = eventDialogBuilder.create();
+                alert.show();
+            }
+            else {
+                Toast.makeText(this, "Brak połączenia z Internetem.", Toast.LENGTH_SHORT).show();
+            }
         }
+    }
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
 }

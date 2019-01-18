@@ -2,10 +2,14 @@ package com.oruba.niezbdnikturystyczny;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -37,6 +41,7 @@ public class HelpActivity extends Activity implements View.OnClickListener {
     private FirebaseFirestore mDb;
     private String helpCase = "";
     private GeoPoint locationToSMS;
+    private long mLastClickTime = 0;
 
     HelpEvent helpEvent = new HelpEvent();
     @Override
@@ -69,63 +74,87 @@ public class HelpActivity extends Activity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.bloodButton:
-                helpEvent.setEvent_name(getString(R.string.blood_button));
-                helpEvent.setAvatar(R.drawable.blood);
-                helpEvent.setAdd_date(null);
-                helpCase = getString(R.string.blood_button);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.blood_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                getUserDetailInformation();
-                break;
-            case R.id.brokenButton:
-                helpEvent.setEvent_name(getString(R.string.broken_button));
-                helpEvent.setAvatar(R.drawable.broken);
-                helpEvent.setAdd_date(null);
-                helpCase = getString(R.string.broken_button);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.broken_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                getUserDetailInformation();
-                break;
-            case R.id.frostbiteButton:
-                helpEvent.setEvent_name(getString(R.string.frostbite_button));
-                helpEvent.setAvatar(R.drawable.frostbite);
-                helpEvent.setAdd_date(null);
-                helpCase = getString(R.string.frostbite_button);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.frostbite_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                getUserDetailInformation();
-                break;
-            case R.id.stingButton:
-                helpEvent.setEvent_name(getString(R.string.sting_button));
-                helpEvent.setAvatar(R.drawable.sting);
-                helpEvent.setAdd_date(null);
-                helpCase = getString(R.string.sting_button);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.sting_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                getUserDetailInformation();
-                break;
-            case R.id.trapButton:
-                helpEvent.setEvent_name(getString(R.string.trap_button));
-                helpEvent.setAvatar(R.drawable.trap);
-                helpEvent.setAdd_date(null);
-                helpCase = getString(R.string.trap_button);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.trap_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                getUserDetailInformation();
-                break;
-            case R.id.unconsciousButton:
-                helpEvent.setEvent_name(getString(R.string.unconscious_button));
-                helpEvent.setAvatar(R.drawable.unconscious);
-                helpEvent.setAdd_date(null);
-                helpCase = getString(R.string.unconscious_button);
-                Toast.makeText(this, "Wydarzenie " + getString(R.string.unconscious_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
-                getUserDetailInformation();
-                break;
-            case R.id.callHelpButton:
-                Intent callIntent = new Intent(Intent.ACTION_DIAL);
-                callIntent.setData(Uri.parse("tel:790398025"));
-                startActivity(callIntent);
-                break;
-            case R.id.textHelpButton:
-                sendSMSForHelp();
+        if(isNetworkAvailable()) {
+            if (SystemClock.elapsedRealtime() - mLastClickTime < 20000){
+                Toast.makeText(this, "Już dodałeś wydarzenie!", Toast.LENGTH_SHORT).show();
+                switch (v.getId()) {
+                    case R.id.callHelpButton:
+                        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+                        callIntent.setData(Uri.parse("tel:790398025"));
+                        startActivity(callIntent);
+                        break;
+                    case R.id.textHelpButton:
+                        sendSMSForHelp();
+                        break;
+                }
+                return;
+            }
+            mLastClickTime = SystemClock.elapsedRealtime();
+            switch (v.getId()) {
+
+                    case R.id.bloodButton:
+                        helpEvent.setEvent_name(getString(R.string.blood_button));
+                        helpEvent.setAvatar(R.drawable.blood);
+                        helpEvent.setAdd_date(null);
+                        helpCase = getString(R.string.blood_button);
+                        Toast.makeText(this, "Wydarzenie " + getString(R.string.blood_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        getUserDetailInformation();
+                        break;
+                    case R.id.brokenButton:
+                        helpEvent.setEvent_name(getString(R.string.broken_button));
+                        helpEvent.setAvatar(R.drawable.broken);
+                        helpEvent.setAdd_date(null);
+                        helpCase = getString(R.string.broken_button);
+                        Toast.makeText(this, "Wydarzenie " + getString(R.string.broken_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        getUserDetailInformation();
+                        break;
+                    case R.id.frostbiteButton:
+                        helpEvent.setEvent_name(getString(R.string.frostbite_button));
+                        helpEvent.setAvatar(R.drawable.frostbite);
+                        helpEvent.setAdd_date(null);
+                        helpCase = getString(R.string.frostbite_button);
+                        Toast.makeText(this, "Wydarzenie " + getString(R.string.frostbite_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        getUserDetailInformation();
+                        break;
+                    case R.id.stingButton:
+                        helpEvent.setEvent_name(getString(R.string.sting_button));
+                        helpEvent.setAvatar(R.drawable.sting);
+                        helpEvent.setAdd_date(null);
+                        helpCase = getString(R.string.sting_button);
+                        Toast.makeText(this, "Wydarzenie " + getString(R.string.sting_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        getUserDetailInformation();
+                        break;
+                    case R.id.trapButton:
+                        helpEvent.setEvent_name(getString(R.string.trap_button));
+                        helpEvent.setAvatar(R.drawable.trap);
+                        helpEvent.setAdd_date(null);
+                        helpCase = getString(R.string.trap_button);
+                        Toast.makeText(this, "Wydarzenie " + getString(R.string.trap_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        getUserDetailInformation();
+                        break;
+                    case R.id.unconsciousButton:
+                        helpEvent.setEvent_name(getString(R.string.unconscious_button));
+                        helpEvent.setAvatar(R.drawable.unconscious);
+                        helpEvent.setAdd_date(null);
+                        helpCase = getString(R.string.unconscious_button);
+                        Toast.makeText(this, "Wydarzenie " + getString(R.string.unconscious_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        getUserDetailInformation();
+                        break;
+                }
         }
+        else {
+            Toast.makeText(this, "Brak połączenia z Internetem.", Toast.LENGTH_SHORT).show();
+        }
+            switch (v.getId()) {
+                case R.id.callHelpButton:
+                    Intent callIntent = new Intent(Intent.ACTION_DIAL);
+                    callIntent.setData(Uri.parse("tel:790398025"));
+                    startActivity(callIntent);
+                    break;
+                case R.id.textHelpButton:
+                    sendSMSForHelp();
+                    break;
+            }
     }
 
     private void getUserDetailInformation() {
@@ -260,5 +289,11 @@ public class HelpActivity extends Activity implements View.OnClickListener {
                 });
         final AlertDialog alert = dialogBuilder.create();
         alert.show();
+    }
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
