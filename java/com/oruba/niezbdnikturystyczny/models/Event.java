@@ -13,12 +13,12 @@ public class Event implements Parcelable {
 
     private GeoPoint geo_point;
     private String event_name;
-    private int avatar;
+    private String avatar;
     private String event_id;
     private @ServerTimestamp Date add_date;
     private User user;
 
-    public Event(GeoPoint geo_point, String event_name, int avatar, Date add_date, String event_id, User user) {
+    public Event(GeoPoint geo_point, String event_name, String avatar, Date add_date, String event_id, User user) {
         this.geo_point = geo_point;
         this.event_name = event_name;
         this.avatar = avatar;
@@ -32,7 +32,7 @@ public class Event implements Parcelable {
 
     protected Event(Parcel in) {
         event_name = in.readString();
-        avatar = in.readInt();
+        avatar = in.readString();
         event_id = in.readString();
     }
 
@@ -56,11 +56,11 @@ public class Event implements Parcelable {
         this.geo_point = geo_point;
     }
 
-    public int getAvatar() {
+    public String getAvatar() {
         return avatar;
     }
 
-    public void setAvatar(int avatar) {
+    public void setAvatar(String avatar) {
         this.avatar = avatar;
     }
 
@@ -115,6 +115,6 @@ public class Event implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(event_name);
         dest.writeString(event_id);
-        dest.writeInt(avatar);
+        dest.writeString(avatar);
     }
 }

@@ -21,15 +21,19 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.ServerTimestamp;
 import com.oruba.niezbdnikturystyczny.models.Event;
 import com.oruba.niezbdnikturystyczny.models.User;
 import com.oruba.niezbdnikturystyczny.models.UserLocation;
+
+import java.util.Date;
 
 public class IssueActivity extends Activity implements View.OnClickListener{
 
@@ -83,59 +87,60 @@ public class IssueActivity extends Activity implements View.OnClickListener{
                 return;
             }
             mLastClickTime = SystemClock.elapsedRealtime();
+
             switch (v.getId()) {
                 case R.id.animalsButton:
                     event.setEvent_name(getString(R.string.animals_button));
-                    event.setAvatar(R.drawable.ic_animals);
-                    event.setAdd_date(null);
+                    event.setAvatar("ic_animals");
+                    event.setAdd_date(new Date());
                     Toast.makeText(this, "Wydarzenie " + getString(R.string.animals_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.avalancheButton:
                     event.setEvent_name(getString(R.string.avalanche_button));
-                    event.setAvatar(R.drawable.ic_avalanche);
-                    event.setAdd_date(null);
+                    event.setAvatar("ic_avalanche");
+                    event.setAdd_date(new Date());
                     Toast.makeText(this, "Wydarzenie " + getString(R.string.avalanche_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.landslideButton:
                     event.setEvent_name(getString(R.string.landslide_button));
-                    event.setAvatar(R.drawable.ic_landslide);
-                    event.setAdd_date(null);
+                    event.setAvatar("ic_landslide");
+                    event.setAdd_date(new Date());
                     Toast.makeText(this, "Wydarzenie " + getString(R.string.landslide_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.iceButton:
                     event.setEvent_name(getString(R.string.ice_button));
-                    event.setAvatar(R.drawable.ic_slippery);
-                    event.setAdd_date(null);
+                    event.setAvatar("ic_slippery");
+                    event.setAdd_date(new Date());
                     Toast.makeText(this, "Wydarzenie " + getString(R.string.ice_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.rocksButton:
                     event.setEvent_name(getString(R.string.rocks_button));
-                    event.setAvatar(R.drawable.ic_rocks);
-                    event.setAdd_date(null);
+                    event.setAvatar("ic_rocks");
+                    event.setAdd_date(new Date());
                     Toast.makeText(this, "Wydarzenie " + getString(R.string.rocks_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.overhangButton:
                     event.setEvent_name(getString(R.string.overhang_button));
-                    event.setAvatar(R.drawable.ic_overhang);
-                    event.setAdd_date(null);
+                    event.setAvatar("ic_overhang");
+                    event.setAdd_date(new Date());
                     Toast.makeText(this, "Wydarzenie " + getString(R.string.overhang_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.trackButton:
                     event.setEvent_name(getString(R.string.track_button));
-                    event.setAvatar(R.drawable.ic_track);
-                    event.setAdd_date(null);
+                    event.setAvatar("ic_track");
+                    event.setAdd_date(new Date());
                     Toast.makeText(this, "Wydarzenie " + getString(R.string.track_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.treeButton:
                     event.setEvent_name(getString(R.string.tree_button));
-                    event.setAvatar(R.drawable.ic_tree);
-                    event.setAdd_date(null);
+                    event.setAvatar("ic_tree");
+                    event.setAdd_date(new Date());
                     Toast.makeText(this, "Wydarzenie " + getString(R.string.tree_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                     break;
                 case R.id.bridgeButton:
                     event.setEvent_name(getString(R.string.bridge_button));
-                    event.setAvatar(R.drawable.ic_bridge);
-                    event.setAdd_date(null);
+                    event.setAvatar("ic_bridge");
+                    event.setAdd_date(new Date());
                     Toast.makeText(this, "Wydarzenie " + getString(R.string.bridge_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                     break;
             }

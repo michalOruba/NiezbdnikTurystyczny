@@ -1,7 +1,10 @@
 package com.oruba.niezbdnikturystyczny;
 
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,6 +17,7 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.oruba.niezbdnikturystyczny.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -95,7 +99,7 @@ public class RegisterActivity extends AppCompatActivity implements
                                         redirectLoginScreen();
                                     }else{
                                         View parentLayout = findViewById(android.R.id.content);
-                                        Snackbar.make(parentLayout, "Something went wrong.", Snackbar.LENGTH_SHORT).show();
+                                        Snackbar.make(parentLayout, "Coś poszło nie tak.", Snackbar.LENGTH_SHORT).show();
                                     }
                                 }
                             });
@@ -103,8 +107,15 @@ public class RegisterActivity extends AppCompatActivity implements
                         }
                         else {
                             View parentLayout = findViewById(android.R.id.content);
-                            Snackbar.make(parentLayout, "Something went wrong.", Snackbar.LENGTH_SHORT).show();
-                            hideDialog();
+
+                            if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                                Toast.makeText(RegisterActivity.this, "Taki użytkownik już istnieje.", Toast.LENGTH_SHORT).show();
+                                hideDialog();
+                            }
+                            else {
+                                Snackbar.make(parentLayout, "Coś poszło nie tak.", Snackbar.LENGTH_SHORT).show();
+                                hideDialog();
+                            }
                         }
 
                         // ...
@@ -141,30 +152,40 @@ public class RegisterActivity extends AppCompatActivity implements
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
-            case R.id.btn_register:{
-                Log.d(TAG, "onClick: attempting to register.");
+        if(isNetworkAvailable()) {
+            switch (view.getId()) {
+                case R.id.btn_register: {
+                    Log.d(TAG, "onClick: attempting to register.");
 
-                //check for null valued EditText fields
-                if(!isEmpty(mEmail.getText().toString())
-                        && !isEmpty(mPassword.getText().toString())
-                        && !isEmpty(mConfirmPassword.getText().toString())){
+                    //check for null valued EditText fields
+                    if (!isEmpty(mEmail.getText().toString())
+                            && !isEmpty(mPassword.getText().toString())
+                            && !isEmpty(mConfirmPassword.getText().toString())) {
 
-                    //check if passwords match
-                    if(doStringsMatch(mPassword.getText().toString(), mConfirmPassword.getText().toString())){
+                        //check if passwords match
+                        if (doStringsMatch(mPassword.getText().toString(), mConfirmPassword.getText().toString())) {
 
-                        //Initiate registration task
-                        registerNewEmail(mEmail.getText().toString(), mPassword.getText().toString());
-                    }else{
-                        Toast.makeText(RegisterActivity.this, "Hasła nie są takie same", Toast.LENGTH_SHORT).show();
+                            //Initiate registration task
+                            registerNewEmail(mEmail.getText().toString(), mPassword.getText().toString());
+                        } else {
+                            Toast.makeText(RegisterActivity.this, "Hasła nie są takie same", Toast.LENGTH_SHORT).show();
+                        }
+
+                    } else {
+                        Toast.makeText(RegisterActivity.this, "Musisz wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
                     }
-
-                }else{
-                    Toast.makeText(RegisterActivity.this, "Musisz wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
+                    break;
                 }
-                break;
             }
+        }else {
+            Toast.makeText(RegisterActivity.this, "Brak połączenia z Internetem.", Toast.LENGTH_SHORT).show();
         }
+    }
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
 

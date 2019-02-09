@@ -50,7 +50,7 @@ public class AchievementItemAdapter extends ArrayAdapter<UserHill> {
         achievementHillDate.setText(new SimpleDateFormat("yyyy-MM-dd").format(currentItem.getAchieve_date()));
 
         ImageView achievementImageID = (ImageView) listItemView.findViewById(R.id.achievement_image);
-        achievementImageID.setImageResource(currentItem.getHill().getHill_avatar());
+        achievementImageID.setImageResource(getContext().getResources().getIdentifier(currentItem.getHill().getHill_avatar(),"drawable", getContext().getPackageName()));
 
         TextView achievementHillSummer = (TextView) listItemView.findViewById(R.id.achievement_hill_summer_status);
         if(currentItem.getAchieve_summer_status() == 1) {

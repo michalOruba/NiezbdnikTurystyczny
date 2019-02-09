@@ -255,9 +255,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void buildAlertMessageNoGps(){
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("This application requires GPS to work properly, do you want to enable it?");
+        builder.setMessage("Ta aplikacja wymaga włączonego modułu GPS, czy chcesz go włączyć?");
         builder.setCancelable(false);
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                 Intent enableGpsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -312,7 +312,7 @@ public class MainActivity extends AppCompatActivity {
             dialog.show();
         }
         else{
-            Toast.makeText(this, "You can't make map requests", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Nie udało się skorzystać z map.", Toast.LENGTH_SHORT).show();
         }
         return false;
     }
@@ -397,7 +397,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "onComplete: longitude: " + geoPoint.getLongitude());
 
                     mUserLocation.setGeo_point(geoPoint);
-                    checkForTopOfHill();
+                    saveUserLocation();
+                    checkIfHillAchieved();
                 }
             }
         });
@@ -432,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    private void checkForTopOfHill() {
+    private void checkIfHillAchieved() {
         LocalDate localDate = new LocalDate();
         int month = localDate.getMonthOfYear();
         for (final Hill hill : mHills) {
@@ -464,9 +465,15 @@ public class MainActivity extends AppCompatActivity {
                         }catch (NullPointerException e){
                             Log.e(TAG, "onComplete: NullPointerException" + e.getMessage());
                         }
-                        if (userHill == null || (userHill != null && (
+                        if (userHill == null || (userHill != null && (mAchievedHill.getAchieve_summer_status() == 0 || mAchievedHill.getAchieve_winter_status() == 0) && (
                                 mAchievedHill.getAchieve_summer_status() != userHill.getAchieve_summer_status() || mAchievedHill.getAchieve_winter_status() != userHill.getAchieve_winter_status()))) {
-
+                                if(userHill != null) {
+                                    if (userHill.getAchieve_summer_status() == 1) {
+                                        userHill.setAchieve_winter_status(mAchievedHill.getAchieve_winter_status());
+                                    } else {
+                                        userHill.setAchieve_summer_status(mAchievedHill.getAchieve_summer_status());
+                                    }
+                                }
                                 DocumentReference locationRef = mDb.
                                         collection(getString(R.string.collection_user_hills))
                                         .document(FirebaseAuth.getInstance().getUid())
@@ -490,10 +497,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void createAchievedNotification(Hill hill){
         String CHANNEL_ID = "my_channel_01";
-        Log.d(TAG, "checkForTopOfHill: onComplete: Hill achievement saved");
+        Log.d(TAG, "checkIfHillAchieved: onComplete: Hill achievement saved");
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-                .setSmallIcon(hill.getHill_avatar()) //getResources().getIdentifier("rysy","drawable", getPackageName())
+                .setSmallIcon(getResources().getIdentifier(hill.getHill_avatar(),"drawable", getPackageName())) //getResources().getIdentifier("rysy","drawable", getPackageName())
                 .setContentTitle(getString(R.string.achievement_notification_title))
                 .setContentText(getString(R.string.achievement_notification_body))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)

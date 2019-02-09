@@ -24,8 +24,8 @@ import java.util.ArrayList;
 
 public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
 
-    Dialog myDialog;
-    Dialog progressDialog;
+    private Dialog myDialog;
+    private Dialog progressDialog;
 
     public NavigationItemAdapter(@NonNull Activity context, ArrayList<NavigationItem> items) {
         super(context,0, items);
@@ -34,8 +34,6 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
     private void runMapsActivity(final NavigationItem mCurrentItem) {
         progressDialog.setCancelable(false);
         progressDialog.show();
-
-        Log.d("Navigation1Fragment", "Dotykam navi!!!!!!!!!!!!!!!!!");
 
         Intent navigateIntent = new Intent(getContext(), MapsActivity.class );
         navigateIntent.putExtra("HILL_LATITUDE", mCurrentItem.getmHillLatitude());

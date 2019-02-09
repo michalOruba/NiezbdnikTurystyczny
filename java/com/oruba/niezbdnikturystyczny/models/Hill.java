@@ -9,12 +9,12 @@ public class Hill implements Parcelable {
 
     private String hill_name;
     private int hill_height;
-    private int hill_avatar;
+    private String hill_avatar;
     private GeoPoint hill_geo_point;
     private String hill_description;
     private String hill_id;
 
-    public Hill(String hill_name, int hill_height, int hill_avatar, GeoPoint hill_geo_point, String hill_description, String hill_id) {
+    public Hill(String hill_name, int hill_height, String hill_avatar, GeoPoint hill_geo_point, String hill_description, String hill_id) {
         this.hill_name = hill_name;
         this.hill_height = hill_height;
         this.hill_avatar = hill_avatar;
@@ -42,11 +42,11 @@ public class Hill implements Parcelable {
         this.hill_height = hill_height;
     }
 
-    public int getHill_avatar() {
+    public String getHill_avatar() {
         return hill_avatar;
     }
 
-    public void setHill_avatar(int hill_avatar) {
+    public void setHill_avatar(String hill_avatar) {
         this.hill_avatar = hill_avatar;
     }
 
@@ -89,7 +89,7 @@ public class Hill implements Parcelable {
     protected Hill(Parcel in) {
         hill_name = in.readString();
         hill_height = in.readInt();
-        hill_avatar = in.readInt();
+        hill_avatar = in.readString();
         hill_description = in.readString();
     }
 
@@ -114,7 +114,7 @@ public class Hill implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(hill_name);
         dest.writeInt(hill_height);
-        dest.writeInt(hill_avatar);
+        dest.writeString(hill_avatar);
         dest.writeString(hill_description);
     }
 }

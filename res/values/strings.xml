@@ -10,10 +10,10 @@
     <string name="navigation2_fragment_name">Nawiguj</string>
     <string name="MASLevel">m n.p.m</string>
     <string name="title_activity_maps">Map</string>
-    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false"></string>
+    <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD7ZUxrWHNOTb3mNaehVZw0PgPEMvJP0lM</string>
 
 
-    <!--Strings to name buttons in issue activity-->
+    <!--Strings related to issue activity-->
     <string name="danger_textView">Zagrożenia na trasie:</string>
     <string name="animals_button">Zwierzęta</string>
     <string name="avalanche_button">Lawina</string>
@@ -32,25 +32,59 @@
 
 
 
+
+    <!--Strings related to help activity-->
+    <string name="blood_button">Krwotok</string>
+    <string name="broken_button">Złamanie</string>
+    <string name="frostbite_button">Odmrożenie</string>
+    <string name="sting_button">Ukąszenie/Uczulenie</string>
+    <string name="trap_button">Uwięzienie</string>
+    <string name="unconscious_button">Nieprzytomność</string>
+    <string name="new_help_title">Ktoś wzywa pomocy!</string>
+    <string name="new_help_content">Ktoś potrzebuje pomocy. Dotknij aby sprawdzić.</string>
+    <string name="help_confirmation">Czy nawigować do lokalizacji?</string>
+    <string name="call_emergency">Zadzwoń po pomoc</string>
+    <string name="text_emergency">Napisz po pomoc</string>
+    <string name="help_textView">Wybierz problem:</string>
+
+
+
+
+    <!--Strings related to achievement activity-->
+    <string name="summer">Lato:</string>
+    <string name="winter">Zima:</string>
+    <string name="achievement_notification_title">"Gratulacje!"</string>
+    <string name="achievement_notification_body">"Zdobyłeś nowy szczyt!"</string>
+    <string name="status_text">Status:</string>
+    <string name="hill_achieved">Zdobyty</string>
+    <string name="hill_not_achieved">Niezdobyty</string>
+    <string name="hills_achieved">%1$d/%2$d %3$.1f%%</string>
+
+
+
+
+    <!--Strings to name buttons in map activity-->
+    <string name="map_help_button">Pomoc</string>
+    <string name="map_issue_button">Wydarzenie</string>
+
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password (optional)</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="action_sign_out">Sign out</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="resend_verification_email">Resend Verification Email</string>
-    <string name="forgot_password">Forgot Password</string>
-    <string name="register">Register</string>
-    <string name="sign_in">Sign In</string>
-    <string name="password">Password</string>
-    <string name="tabian_consulting_logo">Tabian Consulting Logo</string>
-    <string name="email_registration">Email Registration</string>
+    <string name="prompt_password">Hasło (opcjonalnie)</string>
+    <string name="action_sign_in">Zaloguj się lub zrejestruj</string>
+    <string name="action_sign_in_short">Zaloguj</string>
+    <string name="action_sign_out">Wyloguj</string>
+    <string name="error_invalid_email">Adres email jest niepoprawny</string>
+    <string name="error_invalid_password">Hasło jest zbyt krótkie</string>
+    <string name="error_incorrect_password">Hasło jest nieprawidłowe</string>
+    <string name="error_field_required">To pole jest wymagane</string>
+    <string name="resend_verification_email">Wyślij ponownie maila weryfikacyjnego</string>
+    <string name="forgot_password">Zapomniałem hasła</string>
+    <string name="register">Zarejestruj</string>
+    <string name="sign_in">Zaloguj</string>
+    <string name="password">Hasło</string>
+    <string name="email_registration">Rejestracja maila</string>
     <string name="email">Email</string>
-    <string name="confirm_password">Confirm Password</string>
+    <string name="confirm_password">Potwierdź hasło</string>
 
     <!-- Firestore Strings -->
     <string name="collection_users">Users</string>
@@ -59,6 +93,10 @@
     <string name="collection_chatroom_user_list">User List</string>
     <string name="collection_user_locations">User Locations</string>
     <string name="collection_events">Events</string>
+    <string name="collection_help">Help Events</string>
+    <string name="collection_hills">Hills</string>
+    <string name="collection_user_hills">User Hills</string>
+    <string name="collection_achieved_hills">Achieved Hills</string>
 
     <!-- Intent extras -->
     <string name="intent_chatroom">intent_chatroom</string>
@@ -79,4 +117,12 @@
     <string name="action_leave_chatroom">Leave chatroom</string>
     <string name="action_chatroom_user_list">User list</string>
     <string name="action_profile">Profile</string>
+
+
+
+    <!--Facebook strings-->
+
+    <string name="facebook_app_id">544101566102488</string>
+    <string name="fb_login_protocol_scheme">fb544101566102488</string>
+
 </resources>

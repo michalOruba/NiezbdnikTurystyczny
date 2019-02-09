@@ -124,11 +124,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
     private int updatingStarted = 0;
+    private int updatingHelpStarted = 0;
     private int firstOpening = 0;
     SimpleDateFormat sfd = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
 
     private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
+    private Set<String> mClusterMarkersIds = new HashSet<>();
     private ArrayList<UserLocation> mUserLocations = new ArrayList<>();
     private ArrayList<PolylineData> mPolylinesData = new ArrayList<>();
     private List<Event> mEvents = new ArrayList<>();
@@ -142,7 +144,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "onCreate: Jestem w onCreate!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
 
@@ -455,7 +456,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         locationManager.requestLocationUpdates("gps", 5000, 0, locationListener);
-        Log.d("Navigate", "jestem w configbutton");
     }
 
 
@@ -481,8 +481,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
-
-        Log.d(TAG, "onMapReady: Jestem w onMapReady!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         mMap = googleMap;
         getHillParams();
         getEventsFromDB();
@@ -497,7 +495,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
         getUserPosition(hillMarker);
-        //calculateDirections(hillMarker);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -524,49 +521,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             for (Event events : mEvents) {
                 try {
-                    Log.d(TAG, "addMapMarkers: dodaję markery na mapę: " + events.getAdd_date());
-                    String snippet;
-                    snippet = "Data wystąpienia: " + sfd.format(events.getAdd_date()) + "\nKliknij aby potwierdzić." ;
-                    int avatar = events.getAvatar();
+                    if(!mClusterMarkersIds.contains(events.getEvent_id())) {
+                        Log.d(TAG, "addMapMarkers: dodaję markery na mapę: " + events.getAdd_date());
+                        String snippet = "Data wystąpienia: " + sfd.format(events.getAdd_date()) + "\nKliknij aby potwierdzić.";
+                        String avatar = events.getAvatar();
 
-                    ClusterMarker newClusterMarker = new ClusterMarker(
-                            new LatLng(events.getGeo_point().getLatitude(),events.getGeo_point().getLongitude()),
-                            events.getEvent_name(),
-                            snippet,
-                            avatar,
-                            events.getEvent_id()
-                    );
-                    mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+                        ClusterMarker newClusterMarker = new ClusterMarker(
+                                new LatLng(events.getGeo_point().getLatitude(), events.getGeo_point().getLongitude()),
+                                events.getEvent_name(),
+                                snippet,
+                                getResources().getIdentifier(avatar,"drawable", getPackageName()),
+                                events.getEvent_id()
+                        );
+                        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
-                        @Override
-                        public View getInfoWindow(Marker arg0) {
-                            return null;
-                        }
+                            @Override
+                            public View getInfoWindow(Marker arg0) {
+                                return null;
+                            }
 
-                        @Override
-                        public View getInfoContents(Marker marker) {
+                            @Override
+                            public View getInfoContents(Marker marker) {
 
-                            LinearLayout info = new LinearLayout(getApplication());
-                            info.setOrientation(LinearLayout.VERTICAL);
+                                LinearLayout info = new LinearLayout(getApplication());
+                                info.setOrientation(LinearLayout.VERTICAL);
 
-                            TextView title = new TextView(getApplication());
-                            title.setTextColor(Color.BLACK);
-                            title.setGravity(Gravity.CENTER);
-                            title.setTypeface(null, Typeface.BOLD);
-                            title.setText(marker.getTitle());
+                                TextView title = new TextView(getApplication());
+                                title.setTextColor(Color.BLACK);
+                                title.setGravity(Gravity.CENTER);
+                                title.setTypeface(null, Typeface.BOLD);
+                                title.setText(marker.getTitle());
 
-                            TextView snippet = new TextView(getApplication());
-                            snippet.setTextColor(Color.GRAY);
-                            snippet.setText(marker.getSnippet());
+                                TextView snippet = new TextView(getApplication());
+                                snippet.setTextColor(Color.GRAY);
+                                snippet.setText(marker.getSnippet());
 
-                            info.addView(title);
-                            info.addView(snippet);
+                                info.addView(title);
+                                info.addView(snippet);
 
-                            return info;
-                        }
-                    });
-                    mClusterManager.addItem(newClusterMarker);
-                    mClusterMarkers.add(newClusterMarker);
+                                return info;
+                            }
+                        });
+                        mClusterManager.addItem(newClusterMarker);
+                        mClusterMarkers.add(newClusterMarker);
+                        mClusterMarkersIds.add(newClusterMarker.getEventId());
+                    }
                 }catch (NullPointerException e){
                     Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage());
                 }
@@ -574,49 +573,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             for (HelpEvent helpEvents : mHelpEvents) {
                 try {
-                    Log.d(TAG, "addMapMarkers: dodaję markery na mapę: " + helpEvents.getAdd_date());
-                    String snippet;
-                    snippet = getString(R.string.new_help_title);
-                    int avatar = helpEvents.getAvatar();
+                    if(!mClusterMarkersIds.contains(helpEvents.getEvent_id())) {
+                        Log.d(TAG, "addMapMarkers: dodaję markery na mapę: " + helpEvents.getAdd_date());
+                        String snippet = getString(R.string.new_help_title) + "\nData wystąpienia: " + sfd.format(helpEvents.getAdd_date());
+                        String avatar = helpEvents.getAvatar();
 
-                    ClusterMarker newClusterMarker = new ClusterMarker(
-                            new LatLng(helpEvents.getGeo_point().getLatitude(),helpEvents.getGeo_point().getLongitude()),
-                            helpEvents.getEvent_name(),
-                            snippet,
-                            avatar,
-                            helpEvents.getEvent_id()
-                    );
-                    mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+                        ClusterMarker newClusterMarker = new ClusterMarker(
+                                new LatLng(helpEvents.getGeo_point().getLatitude(), helpEvents.getGeo_point().getLongitude()),
+                                helpEvents.getEvent_name(),
+                                snippet,
+                                getResources().getIdentifier(avatar,"drawable", getPackageName()),
+                                helpEvents.getEvent_id()
+                        );
+                        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
-                        @Override
-                        public View getInfoWindow(Marker arg0) {
-                            return null;
-                        }
+                            @Override
+                            public View getInfoWindow(Marker arg0) {
+                                return null;
+                            }
 
-                        @Override
-                        public View getInfoContents(Marker marker) {
+                            @Override
+                            public View getInfoContents(Marker marker) {
 
-                            LinearLayout info = new LinearLayout(getApplication());
-                            info.setOrientation(LinearLayout.VERTICAL);
+                                LinearLayout info = new LinearLayout(getApplication());
+                                info.setOrientation(LinearLayout.VERTICAL);
 
-                            TextView title = new TextView(getApplication());
-                            title.setTextColor(Color.BLACK);
-                            title.setGravity(Gravity.CENTER);
-                            title.setTypeface(null, Typeface.BOLD);
-                            title.setText(marker.getTitle());
+                                TextView title = new TextView(getApplication());
+                                title.setTextColor(Color.BLACK);
+                                title.setGravity(Gravity.CENTER);
+                                title.setTypeface(null, Typeface.BOLD);
+                                title.setText(marker.getTitle());
 
-                            TextView snippet = new TextView(getApplication());
-                            snippet.setTextColor(Color.GRAY);
-                            snippet.setText(marker.getSnippet());
+                                TextView snippet = new TextView(getApplication());
+                                snippet.setTextColor(Color.GRAY);
+                                snippet.setText(marker.getSnippet());
 
-                            info.addView(title);
-                            info.addView(snippet);
+                                info.addView(title);
+                                info.addView(snippet);
 
-                            return info;
-                        }
-                    });
-                    mClusterManager.addItem(newClusterMarker);
-                    mClusterMarkers.add(newClusterMarker);
+                                return info;
+                            }
+                        });
+                        mClusterManager.addItem(newClusterMarker);
+                        mClusterMarkers.add(newClusterMarker);
+                        mClusterMarkersIds.add(newClusterMarker.getEventId());
+                    }
                 }catch (NullPointerException e){
                     Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage());
                 }
@@ -636,8 +637,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         cal.add(Calendar.DATE, daysToDecrement);
         date = cal.getTime();
         Timestamp ts = new Timestamp(date);
-
-
 
         getEventsRef
                 .orderBy("add_date", Query.Direction.ASCENDING)
@@ -667,7 +666,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                             String CHANNEL_ID = "my_channel_01";
                                             NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-                                                    .setSmallIcon(event.getAvatar())
+                                                    .setSmallIcon(getResources().getIdentifier(event.getAvatar(),"drawable", getPackageName()))
                                                     .setContentTitle(getString(R.string.new_issue_title))
                                                     .setContentText(getString(R.string.new_issue_content))
                                                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -724,7 +723,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 try{
                                     HelpEvent helpEvent = doc.toObject(HelpEvent.class);
                                     if(!mHelpEventsIds.contains(helpEvent.getEvent_id())){
-                                        if(updatingStarted == 1){
+                                        if(updatingHelpStarted == 1){
 
                                             Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
                                             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -735,7 +734,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                                             String CHANNEL_ID = "my_channel_01";
                                             NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-                                                    .setSmallIcon(helpEvent.getAvatar())
+                                                    .setSmallIcon(getResources().getIdentifier(helpEvent.getAvatar(),"drawable", getPackageName()))
                                                     .setContentTitle(getString(R.string.new_help_title))
                                                     .setContentText(getString(R.string.new_help_content))
                                                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -754,7 +753,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 }
                             }
                             addMapMarkers();
-                            updatingStarted = 1;
+                            updatingHelpStarted = 1;
                         }
                     }
                 });
@@ -959,7 +958,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this)
                     .setMessage("Czy otworzyć Mapy Google?")
                     .setCancelable(true)
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    .setPositiveButton("Tak", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") int id) {
                             String latitude = String.valueOf(marker.getPosition().latitude);
@@ -978,7 +977,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         }
                     })
-                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    .setNegativeButton("Nie", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, @SuppressWarnings("unused") int id) {
                             dialog.cancel();

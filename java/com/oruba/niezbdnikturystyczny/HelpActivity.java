@@ -31,6 +31,8 @@ import com.oruba.niezbdnikturystyczny.models.Hill;
 import com.oruba.niezbdnikturystyczny.models.User;
 import com.oruba.niezbdnikturystyczny.models.UserLocation;
 
+import java.util.Date;
+
 public class HelpActivity extends Activity implements View.OnClickListener {
 
 
@@ -94,48 +96,48 @@ public class HelpActivity extends Activity implements View.OnClickListener {
 
                     case R.id.bloodButton:
                         helpEvent.setEvent_name(getString(R.string.blood_button));
-                        helpEvent.setAvatar(R.drawable.blood);
-                        helpEvent.setAdd_date(null);
+                        helpEvent.setAvatar("blood");
+                        helpEvent.setAdd_date(new Date());
                         helpCase = getString(R.string.blood_button);
                         Toast.makeText(this, "Wydarzenie " + getString(R.string.blood_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                         getUserDetailInformation();
                         break;
                     case R.id.brokenButton:
                         helpEvent.setEvent_name(getString(R.string.broken_button));
-                        helpEvent.setAvatar(R.drawable.broken);
-                        helpEvent.setAdd_date(null);
+                        helpEvent.setAvatar("broken");
+                        helpEvent.setAdd_date(new Date());
                         helpCase = getString(R.string.broken_button);
                         Toast.makeText(this, "Wydarzenie " + getString(R.string.broken_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                         getUserDetailInformation();
                         break;
                     case R.id.frostbiteButton:
                         helpEvent.setEvent_name(getString(R.string.frostbite_button));
-                        helpEvent.setAvatar(R.drawable.frostbite);
-                        helpEvent.setAdd_date(null);
+                        helpEvent.setAvatar("frostbite");
+                        helpEvent.setAdd_date(new Date());
                         helpCase = getString(R.string.frostbite_button);
                         Toast.makeText(this, "Wydarzenie " + getString(R.string.frostbite_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                         getUserDetailInformation();
                         break;
                     case R.id.stingButton:
                         helpEvent.setEvent_name(getString(R.string.sting_button));
-                        helpEvent.setAvatar(R.drawable.sting);
-                        helpEvent.setAdd_date(null);
+                        helpEvent.setAvatar("sting");
+                        helpEvent.setAdd_date(new Date());
                         helpCase = getString(R.string.sting_button);
                         Toast.makeText(this, "Wydarzenie " + getString(R.string.sting_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                         getUserDetailInformation();
                         break;
                     case R.id.trapButton:
                         helpEvent.setEvent_name(getString(R.string.trap_button));
-                        helpEvent.setAvatar(R.drawable.trap);
-                        helpEvent.setAdd_date(null);
+                        helpEvent.setAvatar("trap");
+                        helpEvent.setAdd_date(new Date());
                         helpCase = getString(R.string.trap_button);
                         Toast.makeText(this, "Wydarzenie " + getString(R.string.trap_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                         getUserDetailInformation();
                         break;
                     case R.id.unconsciousButton:
                         helpEvent.setEvent_name(getString(R.string.unconscious_button));
-                        helpEvent.setAvatar(R.drawable.unconscious);
-                        helpEvent.setAdd_date(null);
+                        helpEvent.setAvatar("unconscious");
+                        helpEvent.setAdd_date(new Date());
                         helpCase = getString(R.string.unconscious_button);
                         Toast.makeText(this, "Wydarzenie " + getString(R.string.unconscious_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
                         getUserDetailInformation();
