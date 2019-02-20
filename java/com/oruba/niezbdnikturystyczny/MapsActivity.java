@@ -374,6 +374,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .snippet("Czas: " + time + "\n" +
                         "Odległość: " + polylineData.getLeg().distance + "\n" +
                         "Rozpocząć nawigację?"));
+                zoomRoute(polylineData.getPolyline().getPoints());
                 mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
                     @Override
