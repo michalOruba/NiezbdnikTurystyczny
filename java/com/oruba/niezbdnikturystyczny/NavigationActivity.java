@@ -37,6 +37,12 @@ public class NavigationActivity extends AppCompatActivity{
 
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        getHillsFromDB();
+    }
+
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);

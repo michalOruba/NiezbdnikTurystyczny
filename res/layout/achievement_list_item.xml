@@ -69,7 +69,7 @@
 
     <TextView
         android:id="@+id/achievement_hill_summer"
-        android:layout_width="52dp"
+        android:layout_width="60dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="16dp"
@@ -85,7 +85,7 @@
 
     <TextView
         android:id="@+id/achievement_hill_winter"
-        android:layout_width="52dp"
+        android:layout_width="60dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="18dp"
         android:layout_marginEnd="8dp"
@@ -101,7 +101,7 @@
 
     <TextView
         android:id="@+id/achievement_hill_summer_status"
-        android:layout_width="100dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="16dp"
@@ -117,8 +117,9 @@
 
     <TextView
         android:id="@+id/achievement_hill_winter_status"
-        android:layout_width="100dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minWidth="100dp"
         android:layout_marginBottom="18dp"
         android:layout_marginEnd="8dp"
         android:shadowColor="#000"

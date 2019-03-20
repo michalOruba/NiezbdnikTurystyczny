@@ -26,16 +26,16 @@
 
     <TextView
         android:id="@+id/loading_text"
-        android:layout_width="wrap_content"
+        android:layout_width="230dp"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
         android:text="Wczytuję mapy. Proszę czekać."
         android:textColor="@color/white"
         android:textSize="16sp"
-        android:gravity="center_vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/desc_navigation_image"

@@ -24,7 +24,7 @@
     <RelativeLayout
         android:id="@+id/horizontal_dialog_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/scrolltext"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,7 +32,7 @@
 
         <TextView
             android:id="@+id/desc_navigation_hill_name"
-            android:layout_width="120dp"
+            android:layout_width="143dp"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_gravity="center"
@@ -45,7 +45,7 @@
 
         <TextView
             android:id="@+id/desc_navigation_hill_height"
-            android:layout_width="120dp"
+            android:layout_width="138dp"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_gravity="center"
@@ -60,10 +60,9 @@
         android:id="@+id/scrolltext"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="16dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -76,27 +75,27 @@
             <TextView
                 android:id="@+id/desc_navigation_hill_description"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="200dp"
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
+                android:maxHeight="200dp"
                 android:textColor="@color/white"
-                android:textSize="16sp"
-                android:maxHeight="200dp"/>
+                android:textSize="16sp" />
 
             <Button
                 android:id="@+id/navigation_dialog_button"
                 android:layout_width="70dp"
                 android:layout_height="40dp"
+                android:layout_below="@id/desc_navigation_hill_description"
+                android:layout_centerHorizontal="true"
                 android:layout_gravity="center"
                 android:layout_margin="8dp"
                 android:background="@drawable/my_button"
                 android:text="Nawiguj"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
-                android:textSize="16sp"
-                android:layout_below="@id/desc_navigation_hill_description"
-                android:layout_centerHorizontal="true"/>
+                android:textSize="16sp" />
         </RelativeLayout>
     </ScrollView>
 

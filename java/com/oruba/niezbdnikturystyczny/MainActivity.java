@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -34,6 +35,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
@@ -75,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private UserHill mAchievedHill = new UserHill();
     private List<Hill> mHills = new ArrayList<>();
     private UserHill userHill = new UserHill();
+    MapsActivity mapsActivity = new MapsActivity();
 
     private static final String seasons[] = {
             "Winter", "Winter",
@@ -130,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
 
         mDb = FirebaseFirestore.getInstance();
         mFusedLocationProvider = LocationServices.getFusedLocationProviderClient(this);
+
 
         getHillsFromDB();
     }
@@ -192,14 +196,21 @@ public class MainActivity extends AppCompatActivity {
     private void getLastKnownLocation() {
         Log.d(TAG, "getLastKnownLocation: called");
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET
+                }, 10);
+                return;
+            }
             return;
         }
-        mFusedLocationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+        mFusedLocationProvider.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
             @Override
-            public void onComplete(@NonNull Task<Location> task) {
-                if (task.isSuccessful()){
-                    Location location = task.getResult();
+            public void onSuccess(Location location) {
+
+                if (location != null) {
                     GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
 
                     Log.d(TAG, "onComplete: latitude: " + geoPoint.getLatitude());
@@ -215,6 +226,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void signOut() {
+        stopLocationUpdates();
+        if (mapsActivity.isRunning) {
+            mapsActivity.stopLocationUpdates();
+        }
+        mDb.disableNetwork();
         FirebaseAuth.getInstance().signOut();
         LoginManager.getInstance().logOut();
         Intent intent = new Intent(this, LoginActivity.class);
@@ -383,20 +399,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getLocation(){
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{
+                        Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET
+                }, 10);
+                return;
+            }
             return;
         }
-        mFusedLocationProvider.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+        mFusedLocationProvider.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
             @Override
-            public void onComplete(@NonNull Task<Location> task) {
-                if (task.isSuccessful()){
-                    Location location = task.getResult();
+            public void onSuccess(Location location) {
+
+                if (location != null) {
                     GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
 
                     Log.d(TAG, "onComplete: latitude: " + geoPoint.getLatitude());
                     Log.d(TAG, "onComplete: longitude: " + geoPoint.getLongitude());
 
                     mUserLocation.setGeo_point(geoPoint);
+                    mUserLocation.setTime_stamp(null);
+
                     saveUserLocation();
                     checkIfHillAchieved();
                 }

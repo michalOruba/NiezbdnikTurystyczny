@@ -78,7 +78,6 @@ public class HelpActivity extends Activity implements View.OnClickListener {
     public void onClick(View v) {
         if(isNetworkAvailable()) {
             if (SystemClock.elapsedRealtime() - mLastClickTime < 20000){
-                Toast.makeText(this, "Już dodałeś wydarzenie!", Toast.LENGTH_SHORT).show();
                 switch (v.getId()) {
                     case R.id.callHelpButton:
                         Intent callIntent = new Intent(Intent.ACTION_DIAL);
@@ -88,10 +87,11 @@ public class HelpActivity extends Activity implements View.OnClickListener {
                     case R.id.textHelpButton:
                         sendSMSForHelp();
                         break;
+                    default:
+                        Toast.makeText(this, "Już dodałeś wydarzenie!", Toast.LENGTH_SHORT).show();
                 }
                 return;
             }
-            mLastClickTime = SystemClock.elapsedRealtime();
             switch (v.getId()) {
 
                     case R.id.bloodButton:
@@ -160,6 +160,7 @@ public class HelpActivity extends Activity implements View.OnClickListener {
     }
 
     private void getUserDetailInformation() {
+        mLastClickTime = SystemClock.elapsedRealtime();
         try {
             DocumentReference userRef = mDb.collection(getString(R.string.collection_users))
                     .document(FirebaseAuth.getInstance().getUid());

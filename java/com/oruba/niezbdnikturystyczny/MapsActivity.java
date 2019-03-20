@@ -127,6 +127,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int updatingHelpStarted = 0;
     private int firstOpening = 0;
     SimpleDateFormat sfd = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+    protected boolean isRunning = false;
 
 
     private ArrayList<ClusterMarker> mClusterMarkers = new ArrayList<>();
@@ -766,6 +767,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mHandler.postDelayed(mRunnable = new Runnable() {
             @Override
             public void run() {
+                isRunning = true;
                 getEventsFromDB();
                 getHelpFromDB();
                 mHandler.postDelayed(mRunnable, LOCATION_UPDATE_INTERVAL);
@@ -773,7 +775,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }, LOCATION_UPDATE_INTERVAL);
     }
 
-    private void stopLocationUpdates(){
+    protected void stopLocationUpdates(){
         mHandler.removeCallbacks(mRunnable);
     }
 

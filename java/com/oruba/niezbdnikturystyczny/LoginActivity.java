@@ -100,12 +100,15 @@ public class LoginActivity extends AppCompatActivity implements
 
     private void showDialog(){
         mProgressBar.setVisibility(View.VISIBLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
 
     }
 
     private void hideDialog(){
         if(mProgressBar.getVisibility() == View.VISIBLE){
             mProgressBar.setVisibility(View.INVISIBLE);
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         }
     }
 
@@ -130,7 +133,7 @@ public class LoginActivity extends AppCompatActivity implements
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
-                    finish();
+                    //finish();
 
                 } else {
                     // User is signed out
@@ -267,7 +270,6 @@ public class LoginActivity extends AppCompatActivity implements
                             newUserRef.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
-                                    hideDialog();
 
                                     if(task.isSuccessful()){
                                         setupFirebaseAuth();
@@ -302,6 +304,7 @@ public class LoginActivity extends AppCompatActivity implements
                         // ...
                     }
                 });
+
     }
 
     @Override
@@ -339,6 +342,7 @@ public class LoginActivity extends AppCompatActivity implements
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        showDialog();
 
             Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
 
@@ -361,22 +365,25 @@ public class LoginActivity extends AppCompatActivity implements
                                 DocumentReference newUserRef = mDb
                                         .collection(getString(R.string.collection_users))
                                         .document(firebaseUser.getUid());
+                                showDialog();
 
                                 newUserRef.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        hideDialog();
+                                    public void onComplete(@NonNull Task<Void> secondTtsk) {
 
-                                        if(task.isSuccessful()){
+
+                                        if(secondTtsk.isSuccessful()){
                                             setupFirebaseAuth();
+                                            hideDialog();
                                         }else{
                                             View parentLayout = findViewById(android.R.id.content);
-                                            if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                                            if (secondTtsk.getException() instanceof FirebaseAuthUserCollisionException) {
                                                 Snackbar.make(parentLayout, "Email został już użyty do logowania inną metodą!", Snackbar.LENGTH_SHORT).show();
                                             }
                                             else {
                                                 Snackbar.make(parentLayout, "Autoryzacja nieudana.", Snackbar.LENGTH_SHORT).show();
                                             }
+                                            hideDialog();
                                         }
                                     }
                                 });
@@ -392,6 +399,7 @@ public class LoginActivity extends AppCompatActivity implements
                                     Snackbar.make(parentLayout, "Autoryzacja nieudana.", Snackbar.LENGTH_SHORT).show();
                                 }
                                 setupFirebaseAuth();
+                                hideDialog();
                             }
 
                             // ...
