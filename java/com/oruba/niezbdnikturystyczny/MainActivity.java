@@ -56,6 +56,7 @@ import org.joda.time.LocalDate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -63,23 +64,30 @@ import static com.oruba.niezbdnikturystyczny.Constants.ERROR_DIALOG_REQUEST;
 import static com.oruba.niezbdnikturystyczny.Constants.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
 import static com.oruba.niezbdnikturystyczny.Constants.PERMISSIONS_REQUEST_ENABLE_GPS;
 
+
+    /** Main logic Class. Starts right after user logs in.
+     * Sets up thread, that is checking if User is close enough to the hill to achieve it
+     * Checks for permissions
+     *
+     */
+
 public class MainActivity extends AppCompatActivity {
     public final String TAG = "MainActivity";
     private static final int LOCATION_GET_INTERVAL = 10000;
 
     private ImageView menu_navigation, menu_help, menu_issue, menu_achievement;
     private FirebaseFirestore mDb;
+    private String userId;
     private boolean mLocationPermissionGranted = false;
     private FusedLocationProviderClient mFusedLocationProvider;
     private UserLocation mUserLocation;
     private Handler mHandler = new Handler();
     private Runnable mRunnable;
-    private UserHill mAchievedHill = new UserHill();
     private List<Hill> mHills = new ArrayList<>();
     private UserHill userHill = new UserHill();
     MapsActivity mapsActivity = new MapsActivity();
 
-    private static final String seasons[] = {
+    private static final String[] seasons = {
             "Winter", "Winter",
             "Winter", "Winter", "Summer",
             "Summer", "Summer", "Summer",
@@ -87,12 +95,13 @@ public class MainActivity extends AppCompatActivity {
             "Winter"
     };
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        Log.d(TAG, "onCreate: " + R.drawable.rysy);
+
         setContentView(R.layout.activity_main);
         menu_navigation = findViewById(R.id.menu_navigation);
         menu_help = findViewById(R.id.menu_help);
@@ -133,20 +142,23 @@ public class MainActivity extends AppCompatActivity {
 
         mDb = FirebaseFirestore.getInstance();
         mFusedLocationProvider = LocationServices.getFusedLocationProviderClient(this);
+        userId = FirebaseAuth.getInstance().getUid();
 
 
         getHillsFromDB();
     }
 
 
-
+        /**
+         * Method that gets current user location information from Firebase
+         */
 
     private void getUserDetails(){
         if (mUserLocation == null){
             mUserLocation = new UserLocation();
 
             DocumentReference userRef = mDb.collection(getString(R.string.collection_users))
-                    .document(FirebaseAuth.getInstance().getUid());
+                    .document(userId);
 
             userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
@@ -155,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "onComplete: successfully get the user details.");
 
 
-                        User user = task.getResult().toObject(User.class);
+                        User user = Objects.requireNonNull(task.getResult()).toObject(User.class);
                         mUserLocation.setUser(user);
 
                         ((UserClient) getApplicationContext()).setUser(user);
@@ -171,27 +183,9 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
-    private void saveUserLocation(){
-
-        if (mUserLocation != null){
-            DocumentReference locationRef = mDb.
-                    collection(getString(R.string.collection_user_locations))
-                    .document(FirebaseAuth.getInstance().getUid());
-            locationRef.set(mUserLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if(task.isSuccessful()){
-                        Log.d(TAG, "saveUserLocation: \ninserted users location into database" +
-                        "\nlatitude: " + mUserLocation.getGeo_point().getLatitude() +
-                        "\nlongitude: " + mUserLocation.getGeo_point().getLongitude());
-
-
-                    }
-                }
-            });
-        }
-    }
+        /**
+         * This method is getting users last location stored on the device.
+         */
 
     private void getLastKnownLocation() {
         Log.d(TAG, "getLastKnownLocation: called");
@@ -225,6 +219,36 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+        /**
+         * Updating location in Firebase
+         */
+
+    private void saveUserLocation(){
+
+        if (mUserLocation != null){
+            DocumentReference locationRef = mDb.
+                    collection(getString(R.string.collection_user_locations))
+                    .document(userId);
+            locationRef.set(mUserLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    if(task.isSuccessful()){
+                        Log.d(TAG, "saveUserLocation: \ninserted users location into database" +
+                                "\nlatitude: " + mUserLocation.getGeo_point().getLatitude() +
+                                "\nlongitude: " + mUserLocation.getGeo_point().getLongitude());
+
+
+                    }
+                }
+            });
+        }
+    }
+
+        /**
+         * Method that is singing user out, deleting all credentials stored on device.
+         * After logging out redirects to login view
+         */
+
     private void signOut() {
         stopLocationUpdates();
         if (mapsActivity.isRunning) {
@@ -249,22 +273,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_sign_out: {
-                signOut();
-                return true;
-            }
-            default: {
-                return super.onOptionsItemSelected(item);
-            }
+        if (item.getItemId() == R.id.action_sign_out) {
+            signOut();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     private boolean checkMapServices(){
         if(isServicesOK()){
-            if(isMapsEnabled()){
-                return true;
-            }
+            return isMapsEnabled();
         }
         return false;
     }
@@ -288,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean isMapsEnabled(){
         final LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if (!manager.isProviderEnabled( LocationManager.GPS_PROVIDER)){
+        if (!Objects.requireNonNull(manager).isProviderEnabled( LocationManager.GPS_PROVIDER)){
             buildAlertMessageNoGps();
             return false;
         }
@@ -336,13 +354,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         mLocationPermissionGranted = false;
-        switch (requestCode){
-            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    mLocationPermissionGranted = true;
-                    getUserDetails();
-                }
+        if (requestCode == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {// If request is cancelled, the result arrays are empty
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                mLocationPermissionGranted = true;
+                getUserDetails();
             }
         }
     }
@@ -351,14 +366,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         Log.d(TAG, "onActivityResult: called.");
-        switch (requestCode){
-            case PERMISSIONS_REQUEST_ENABLE_GPS: {
-                if(mLocationPermissionGranted){
-                    // (...)
-                }
-                else{
-                    getLocationPermission();
-                }
+        if (requestCode == PERMISSIONS_REQUEST_ENABLE_GPS) {
+            if (mLocationPermissionGranted) {
+                Log.d(TAG, "onActivityResult: Location Permissions granted");
+            } else {
+                getLocationPermission();
             }
         }
     }
@@ -384,6 +396,11 @@ public class MainActivity extends AppCompatActivity {
         stopLocationUpdates();
     }
 
+        /**
+         * New Thread that updates users location in @LOCATION_GET_INTERVAL time
+         *
+         */
+
     private void startUserLocationsRunnable(){
         Log.d(TAG, "startUserLocationsRunnable: starting runnable for retrieving updated locations.");
         mHandler.postDelayed(mRunnable = new Runnable() {
@@ -394,9 +411,15 @@ public class MainActivity extends AppCompatActivity {
             }
         }, LOCATION_GET_INTERVAL);
     }
+
+
     private void stopLocationUpdates(){
         mHandler.removeCallbacks(mRunnable);
     }
+
+        /**
+         * Gets current user location
+         */
 
     private void getLocation(){
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -423,12 +446,19 @@ public class MainActivity extends AppCompatActivity {
                     mUserLocation.setTime_stamp(null);
 
                     saveUserLocation();
+
+
+
+
                     checkIfHillAchieved();
                 }
             }
         });
     }
 
+        /**
+         * Get every hill from Firebase and add them to @mHills ArrayList
+         */
     public void getHillsFromDB(){
         mHills = new ArrayList<>();
         CollectionReference getHillRef = mDb.collection(getString(R.string.collection_hills));
@@ -458,53 +488,64 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+        /**
+         * Checks if current users position is close to the Hills top
+         * If so, it updates data in database and sends notification to the user.
+         */
+
     private void checkIfHillAchieved() {
         LocalDate localDate = new LocalDate();
-        int month = localDate.getMonthOfYear();
+        final int month = localDate.getMonthOfYear();
+
         for (final Hill hill : mHills) {
-            if (Math.abs(mUserLocation.getGeo_point().getLatitude() - hill.getHill_geopoint().getLatitude()) < 0.0005
-                    && Math.abs(mUserLocation.getGeo_point().getLongitude() - hill.getHill_geopoint().getLongitude()) < 0.0005) {
+
+            double latitudeDistanceFromHill = Math.abs(mUserLocation.getGeo_point().getLatitude() - hill.getHill_geopoint().getLatitude());
+            double longitudeDistanceFromHill = Math.abs(mUserLocation.getGeo_point().getLongitude() - hill.getHill_geopoint().getLongitude());
+
+            // Checking if current user position is close to the hills top (~10m difference is accepted)
+            if (latitudeDistanceFromHill < 0.0005 && longitudeDistanceFromHill < 0.0005) {
+
+                // Setting UserHill object
                 userHill.setHill(hill);
                 if (seasons[month].equals("Winter")) {
-                        userHill.setAchieve_winter_status(1);
+                    userHill.setAchieve_winter_status(1);
                 }
                 else if (seasons[month].equals("Summer")){
                     userHill.setAchieve_summer_status(1);
                 }
 
-                DocumentReference alreadyAchievedRef = mDb.
+                // Document reference to the proper object in Firestore
+                final DocumentReference alreadyAchievedRef = mDb.
                         collection(getString(R.string.collection_user_hills))
-                        .document(FirebaseAuth.getInstance().getUid())
+                        .document(userId)
                         .collection(getString(R.string.collection_achieved_hills))
                         .document(hill.getHill_id());
+
+                // Checking if already user got this hill
                 alreadyAchievedRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        Log.d(TAG, "onComplete: successfully get the achieved hill details.");
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            assert document != null;
+                            // If Hill already exist in users data, update field based on @seasons table and create notification
+                            if (document.exists()) {
+                                Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                                Log.d(TAG, "achieve_winter_status data: " + document.get("achieve_winter_status"));
 
-                        try {
-                            UserHill userHill = task.getResult().toObject(UserHill.class);
-                            mAchievedHill.setHill(userHill.getHill());
-                            mAchievedHill.setAchieve_summer_status(userHill.getAchieve_summer_status());
-                            mAchievedHill.setAchieve_winter_status(userHill.getAchieve_winter_status());
-                        }catch (NullPointerException e){
-                            Log.e(TAG, "onComplete: NullPointerException" + e.getMessage());
-                        }
-                        if (userHill == null || (userHill != null && (mAchievedHill.getAchieve_summer_status() == 0 || mAchievedHill.getAchieve_winter_status() == 0) && (
-                                mAchievedHill.getAchieve_summer_status() != userHill.getAchieve_summer_status() || mAchievedHill.getAchieve_winter_status() != userHill.getAchieve_winter_status()))) {
-                                if(userHill != null) {
-                                    if (userHill.getAchieve_summer_status() == 1) {
-                                        userHill.setAchieve_winter_status(mAchievedHill.getAchieve_winter_status());
-                                    } else {
-                                        userHill.setAchieve_summer_status(mAchievedHill.getAchieve_summer_status());
-                                    }
+                                if (seasons[month].equals("Winter") && document.get("achieve_winter_status") == Long.valueOf(0)) {
+                                    alreadyAchievedRef.update("achieve_winter_status", 1);
+                                    createAchievedNotification(hill);
                                 }
-                                DocumentReference locationRef = mDb.
-                                        collection(getString(R.string.collection_user_hills))
-                                        .document(FirebaseAuth.getInstance().getUid())
-                                        .collection(getString(R.string.collection_achieved_hills))
-                                        .document(hill.getHill_id());
-                                locationRef.set(userHill).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                else if (seasons[month].equals("Summer") && document.get("achieve_summer_status") == Long.valueOf(0)){
+                                    alreadyAchievedRef.update("achieve_summer_status", 1);
+                                    createAchievedNotification(hill);
+                                }
+
+                            // If there is not current hill in users document, than create one.
+                            } else {
+                                Log.d(TAG, "No such document, creating new one.");
+                                alreadyAchievedRef.set(userHill).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if (task.isSuccessful()) {
@@ -512,14 +553,23 @@ public class MainActivity extends AppCompatActivity {
                                         }
                                     }
                                 });
+
+                            }
+                        } else {
+                            Log.d(TAG, "get failed with ", task.getException());
                         }
                     }
                 });
+
 
             }
         }
     }
 
+        /**
+         * Preparing notification
+         * @param hill Newly achieved hill. Congratulations!
+         */
     public void createAchievedNotification(Hill hill){
         String CHANNEL_ID = "my_channel_01";
         Log.d(TAG, "checkIfHillAchieved: onComplete: Hill achievement saved");
@@ -532,6 +582,6 @@ public class MainActivity extends AppCompatActivity {
                 .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
                 .setAutoCancel(true);
         NotificationManager notificationManagerCompat = (NotificationManager) getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManagerCompat.notify(1, builder.build());
+        Objects.requireNonNull(notificationManagerCompat).notify(1, builder.build());
     }
 }

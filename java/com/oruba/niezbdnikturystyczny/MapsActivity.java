@@ -1048,6 +1048,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
     }
+
+    /**
+     * Method checks if Internet connection is on
+     * @return true if Internet connection is on, false otherwise
+     */
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);

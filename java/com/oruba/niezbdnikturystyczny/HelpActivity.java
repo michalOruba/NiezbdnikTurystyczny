@@ -27,23 +27,26 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.oruba.niezbdnikturystyczny.models.HelpEvent;
-import com.oruba.niezbdnikturystyczny.models.Hill;
 import com.oruba.niezbdnikturystyczny.models.User;
 import com.oruba.niezbdnikturystyczny.models.UserLocation;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class HelpActivity extends Activity implements View.OnClickListener {
 
 
     private static final String TAG = "HelpActivity";
+    private final int DOUBLE_CLICK_LIMIT_TIME = 20000;
+    private final String EMERGENCY_PHONE_NUMBER = "790398025";
 
     private ImageButton bloodButton, brokenButton, frostbiteButton,
             stingButton, trapButton, unconsciousButton, callHelpButton, textHelpButton;
-    private FirebaseFirestore mDb;
+    private FirebaseFirestore mDb = FirebaseFirestore.getInstance();
     private String helpCase = "";
-    private GeoPoint locationToSMS;
+    private GeoPoint locationForSMS;
     private long mLastClickTime = 0;
+    private String userId;
 
     HelpEvent helpEvent = new HelpEvent();
     @Override
@@ -70,100 +73,87 @@ public class HelpActivity extends Activity implements View.OnClickListener {
         textHelpButton = findViewById(R.id.textHelpButton);
         textHelpButton.setOnClickListener(this);
 
-        mDb = FirebaseFirestore.getInstance();
+        userId = FirebaseAuth.getInstance().getUid();
+
 
     }
 
+    /**
+     * Method decides about which element was clicked. Each element has its own help need.
+     * If user has Internet connection on, proper icon will appear on the map.
+     * @param v An element that was clicked by user
+     */
     @Override
     public void onClick(View v) {
         if(isNetworkAvailable()) {
-            if (SystemClock.elapsedRealtime() - mLastClickTime < 20000){
-                switch (v.getId()) {
-                    case R.id.callHelpButton:
-                        Intent callIntent = new Intent(Intent.ACTION_DIAL);
-                        callIntent.setData(Uri.parse("tel:790398025"));
-                        startActivity(callIntent);
-                        break;
-                    case R.id.textHelpButton:
-                        sendSMSForHelp();
-                        break;
-                    default:
-                        Toast.makeText(this, "Już dodałeś wydarzenie!", Toast.LENGTH_SHORT).show();
-                }
-                return;
+            if (SystemClock.elapsedRealtime() - mLastClickTime < DOUBLE_CLICK_LIMIT_TIME){
+                if (v.getId() != R.id.callHelpButton && v.getId() != R.id.textHelpButton)
+                    Toast.makeText(this, "Już dodałeś wydarzenie!", Toast.LENGTH_SHORT).show();
             }
-            switch (v.getId()) {
+            else{
+                switch (v.getId()) {
 
                     case R.id.bloodButton:
-                        helpEvent.setEvent_name(getString(R.string.blood_button));
-                        helpEvent.setAvatar("blood");
-                        helpEvent.setAdd_date(new Date());
-                        helpCase = getString(R.string.blood_button);
-                        Toast.makeText(this, "Wydarzenie " + getString(R.string.blood_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        setHelpEventData(getString(R.string.blood_button), "blood");
                         getUserDetailInformation();
                         break;
                     case R.id.brokenButton:
-                        helpEvent.setEvent_name(getString(R.string.broken_button));
-                        helpEvent.setAvatar("broken");
-                        helpEvent.setAdd_date(new Date());
-                        helpCase = getString(R.string.broken_button);
-                        Toast.makeText(this, "Wydarzenie " + getString(R.string.broken_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        setHelpEventData(getString(R.string.broken_button), "broken");
                         getUserDetailInformation();
                         break;
                     case R.id.frostbiteButton:
-                        helpEvent.setEvent_name(getString(R.string.frostbite_button));
-                        helpEvent.setAvatar("frostbite");
-                        helpEvent.setAdd_date(new Date());
-                        helpCase = getString(R.string.frostbite_button);
-                        Toast.makeText(this, "Wydarzenie " + getString(R.string.frostbite_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        setHelpEventData(getString(R.string.frostbite_button), "frostbite");
                         getUserDetailInformation();
                         break;
                     case R.id.stingButton:
-                        helpEvent.setEvent_name(getString(R.string.sting_button));
-                        helpEvent.setAvatar("sting");
-                        helpEvent.setAdd_date(new Date());
-                        helpCase = getString(R.string.sting_button);
-                        Toast.makeText(this, "Wydarzenie " + getString(R.string.sting_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        setHelpEventData(getString(R.string.sting_button), "sting");
                         getUserDetailInformation();
                         break;
                     case R.id.trapButton:
-                        helpEvent.setEvent_name(getString(R.string.trap_button));
-                        helpEvent.setAvatar("trap");
-                        helpEvent.setAdd_date(new Date());
-                        helpCase = getString(R.string.trap_button);
-                        Toast.makeText(this, "Wydarzenie " + getString(R.string.trap_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        setHelpEventData(getString(R.string.trap_button), "trap");
                         getUserDetailInformation();
                         break;
                     case R.id.unconsciousButton:
-                        helpEvent.setEvent_name(getString(R.string.unconscious_button));
-                        helpEvent.setAvatar("unconscious");
-                        helpEvent.setAdd_date(new Date());
-                        helpCase = getString(R.string.unconscious_button);
-                        Toast.makeText(this, "Wydarzenie " + getString(R.string.unconscious_button) + " zostało dodane", Toast.LENGTH_SHORT).show();
+                        setHelpEventData(getString(R.string.unconscious_button), "unconscious");
                         getUserDetailInformation();
                         break;
                 }
+            }
         }
         else {
             Toast.makeText(this, "Brak połączenia z Internetem.", Toast.LENGTH_SHORT).show();
         }
-            switch (v.getId()) {
-                case R.id.callHelpButton:
-                    Intent callIntent = new Intent(Intent.ACTION_DIAL);
-                    callIntent.setData(Uri.parse("tel:790398025"));
-                    startActivity(callIntent);
-                    break;
-                case R.id.textHelpButton:
-                    sendSMSForHelp();
-                    break;
-            }
+        switch (v.getId()) {
+            case R.id.callHelpButton:
+                callForHelp();
+                break;
+            case R.id.textHelpButton:
+                sendSMSForHelp();
+                break;
+        }
     }
 
+    /**
+     * Method that sets up helpEvent object.
+     * @param eventName Event name, taken from Strings.xml file.
+     * @param avatarName Avatar img file name.
+     */
+    private void setHelpEventData(String eventName, String avatarName) {
+        helpEvent.setEvent_name(eventName);
+        helpEvent.setAvatar(avatarName);
+        helpEvent.setAdd_date(new Date());
+        helpCase = eventName;
+        Toast.makeText(this, "Wydarzenie " + eventName + " zostało dodane", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     *  Method gets current user information from Firestore and adds them to HelpEvent object
+     */
     private void getUserDetailInformation() {
         mLastClickTime = SystemClock.elapsedRealtime();
         try {
             DocumentReference userRef = mDb.collection(getString(R.string.collection_users))
-                    .document(FirebaseAuth.getInstance().getUid());
+                    .document(Objects.requireNonNull(userId));
 
             userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
@@ -172,7 +162,7 @@ public class HelpActivity extends Activity implements View.OnClickListener {
                         Log.d(TAG, "onComplete: successfully get the user details.");
 
 
-                        User user = task.getResult().toObject(User.class);
+                        User user = Objects.requireNonNull(task.getResult()).toObject(User.class);
                         helpEvent.setEventUser(user);
 
                         getUsersCurrentPosition();
@@ -185,20 +175,25 @@ public class HelpActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    /**
+     * Method gets Users current location and adds it to HelpEvent object and fills object locationForSMS
+     */
+
     private void getUsersCurrentPosition() {
 
         Log.d(TAG, "getUsersCurrentPosition: Getting Users current location to add help");
         try {
             DocumentReference docRef = mDb.collection(getString(R.string.collection_user_locations))
-                    .document(FirebaseAuth.getInstance().getUid());
+                    .document(Objects.requireNonNull(userId));
             docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                     if (task.isSuccessful()) {
                         Log.d(TAG, "onComplete: successfully got users location");
-                        UserLocation userLocation = task.getResult().toObject(UserLocation.class);
+                        UserLocation userLocation = Objects.requireNonNull(task.getResult()).toObject(UserLocation.class);
+                        assert userLocation != null;
                         helpEvent.setGeo_point(userLocation.getGeo_point());
-                        locationToSMS = userLocation.getGeo_point();
+                        locationForSMS = userLocation.getGeo_point();
                         setHelpOnCurrentLocation();
                     }
                 }
@@ -208,6 +203,10 @@ public class HelpActivity extends Activity implements View.OnClickListener {
             Log.d(TAG, "getUsersCurrentPosition: NullPointerException: " + e.getMessage());
         }
     }
+
+    /**
+     * Creating document in Firestore
+     */
 
     private void setHelpOnCurrentLocation() {
         Log.d(TAG, "setHelpOnCurrentLocation: Setting event in database");
@@ -231,18 +230,34 @@ public class HelpActivity extends Activity implements View.OnClickListener {
         }
         createHelpDialog();
     }
+
+    /**
+     * Making Intent to call @EMERGENCY_PHONE_NUMBER via external application
+     */
+
+    private void callForHelp() {
+        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+        callIntent.setData(Uri.parse("tel:" + EMERGENCY_PHONE_NUMBER));
+        startActivity(callIntent);
+    }
+
+    /**
+     * If locationForSMS is not available, than try to get it from FireStore
+     */
+
     private void sendSMSForHelp(){
-        if (locationToSMS == null){
+        if (locationForSMS == null){
             try {
                 DocumentReference docRef = mDb.collection(getString(R.string.collection_user_locations))
-                        .document(FirebaseAuth.getInstance().getUid());
+                        .document(Objects.requireNonNull(userId));
                 docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "sendSMSForHelp: successfully got users location");
-                            UserLocation userLocation = task.getResult().toObject(UserLocation.class);
-                            locationToSMS = userLocation.getGeo_point();
+                            UserLocation userLocation = Objects.requireNonNull(task.getResult()).toObject(UserLocation.class);
+                            assert userLocation != null;
+                            locationForSMS = userLocation.getGeo_point();
                             createSMS();
                         }
                     }
@@ -255,16 +270,31 @@ public class HelpActivity extends Activity implements View.OnClickListener {
         }
         else createSMS();
     }
+
+    /**
+     * Making Intent to send @EMERGENCY_PHONE_NUMBER via external application
+     */
     public void createSMS(){
         Log.d(TAG, "createSMS: creating SMS");
         Intent textIntent = new Intent(Intent.ACTION_VIEW);
         textIntent.setType("vnd.android-dir/mms-sms");
-        textIntent.putExtra("address", "790398025");
+        textIntent.putExtra("address", EMERGENCY_PHONE_NUMBER);
 
-        if (helpCase == "") textIntent.putExtra("sms_body", "Proszę o pomoc. Moja lokalizacja to: Szerokość: " + locationToSMS.getLatitude() + "; Długość: " + locationToSMS.getLongitude() + ".");
-        else textIntent.putExtra("sms_body", "Proszę o pomoc. Powód wezwania pomocy: " + helpCase + ". Moja lokalizacja to: Szerokość: " + locationToSMS.getLatitude() + "; Długość: " + locationToSMS.getLongitude() + ".");
+        if (helpCase.equals(""))
+            textIntent.putExtra("sms_body", "Proszę o pomoc. Moja lokalizacja to: Szerokość: " +
+                    locationForSMS.getLatitude() + "; Długość: " + locationForSMS.getLongitude() + ".");
+
+        else
+            textIntent.putExtra("sms_body", "Proszę o pomoc. Powód wezwania pomocy: " + helpCase +
+                    ". Moja lokalizacja to: Szerokość: " + locationForSMS.getLatitude() + "; Długość: " + locationForSMS.getLongitude() + ".");
+
         startActivity(textIntent);
     }
+
+    /**
+     * Creating a popup dialog, which asks user if he wants to call or text emergency
+     * Popup shows only, when user is clicking on icon with help cause.
+     */
 
     public void createHelpDialog(){
         final AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this)
@@ -273,9 +303,7 @@ public class HelpActivity extends Activity implements View.OnClickListener {
                 .setPositiveButton("Zadzwoń", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") int id) {
-                        Intent callIntent = new Intent(Intent.ACTION_DIAL);
-                        callIntent.setData(Uri.parse("tel:790398025"));
-                        startActivity(callIntent);
+                        callForHelp();
                     }
                 })
                 .setNeutralButton("Anuluj", new DialogInterface.OnClickListener() {
@@ -293,9 +321,15 @@ public class HelpActivity extends Activity implements View.OnClickListener {
         final AlertDialog alert = dialogBuilder.create();
         alert.show();
     }
+
+    /**
+     * Method checks if Internet connection is on
+     * @return true if Internet connection is on, false otherwise
+     */
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        assert connectivityManager != null;
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }

@@ -1,7 +1,6 @@
 package com.oruba.niezbdnikturystyczny;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -10,16 +9,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.ListView;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.oruba.niezbdnikturystyczny.models.Hill;
@@ -84,7 +77,7 @@ public class NavigationActivity extends AppCompatActivity{
         }
         NavigationItemAdapter adapter = new NavigationItemAdapter(this, hills);
 
-        listView = (ListView) findViewById(R.id.navigation_list);
+        listView = findViewById(R.id.navigation_list);
 
         listView.setAdapter(adapter);
     }

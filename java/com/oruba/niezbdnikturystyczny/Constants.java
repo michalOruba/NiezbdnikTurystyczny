@@ -1,13 +1,17 @@
 package com.oruba.niezbdnikturystyczny;
 
-public class Constants {
+/** Class holding constant values for MapsActivities
+ *
+ */
 
-    public static final int ERROR_DIALOG_REQUEST = 9001;
-    public static final int PERMISSIONS_REQUEST_ENABLE_GPS = 9002;
-    public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 9003;
+class Constants {
 
-    public static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
+    static final int ERROR_DIALOG_REQUEST = 9001;
+    static final int PERMISSIONS_REQUEST_ENABLE_GPS = 9002;
+    static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 9003;
+
+    static final String MAPVIEW_BUNDLE_KEY = "MapViewBundleKey";
 
 
-    public static final int ALL_HILLS_AVAILABLE = 9;
+    static final int ALL_HILLS_AVAILABLE = 9;
 }

@@ -14,7 +14,6 @@ import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -31,7 +30,6 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.oruba.niezbdnikturystyczny.UserClient;
 import com.oruba.niezbdnikturystyczny.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -40,12 +38,20 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 
+
+import java.util.Objects;
 
 import static android.text.TextUtils.isEmpty;
+
+/**
+ * Class that contains a logic to check current user login status and handles Login View
+ * If there is no user data retrieve on device, Login View will appear.
+ * User can login with username and password, via Facebook or Gmail.
+ * If user hasn't account yet, he can register one.
+ * After successful login, credentials are store on the device and user will be log in automatically.
+ */
 
 public class LoginActivity extends AppCompatActivity implements
         View.OnClickListener
@@ -62,7 +68,6 @@ public class LoginActivity extends AppCompatActivity implements
     private ProgressBar mProgressBar;
     private CallbackManager mCallbackManager;
     private FirebaseAuth mAuth;
-    private FirebaseUser user;
     private FirebaseFirestore mDb;
     private GoogleSignInClient mGoogleSignInClient;
 
@@ -116,8 +121,8 @@ public class LoginActivity extends AppCompatActivity implements
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
-    /*
-        ----------------------------- Firebase setup ---------------------------------
+    /**
+     *  Sets up Firebase
      */
     private void setupFirebaseAuth(){
         Log.d(TAG, "setupFirebaseAuth: started.");
@@ -144,12 +149,19 @@ public class LoginActivity extends AppCompatActivity implements
         };
     }
 
+
+    /**
+     * Adds listener to Firebase authorisation
+     */
     @Override
     public void onStart() {
         super.onStart();
         FirebaseAuth.getInstance().addAuthStateListener(mAuthListener);
     }
 
+    /**
+     * Removes listener of Firebase authorisation
+     */
     @Override
     public void onStop() {
         super.onStop();
@@ -158,6 +170,9 @@ public class LoginActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Signing in with provided email and password
+     */
     private void signIn(){
         //check if the fields are filled out
         if(!isEmpty(mEmail.getText().toString())
@@ -186,6 +201,9 @@ public class LoginActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Signing with Facebook
+     */
     public void signWithFB() {
         // Initialize Facebook Login button
             mCallbackManager = CallbackManager.Factory.create();
@@ -215,6 +233,13 @@ public class LoginActivity extends AppCompatActivity implements
             });
     }
 // ...
+
+    /**
+     *  Function revoked from signWithGoogle() method.
+     * @param requestCode Const value to identify Intent
+     * @param resultCode Result status
+     * @param data Returned data with credentials
+     */
         @Override
         protected void onActivityResult(int requestCode, int resultCode, Intent data) {
             super.onActivityResult(requestCode, resultCode, data);
@@ -228,6 +253,7 @@ public class LoginActivity extends AppCompatActivity implements
                     try {
                         // Google Sign In was successful, authenticate with Firebase
                         GoogleSignInAccount account = task.getResult(ApiException.class);
+                        assert account != null;
                         firebaseAuthWithGoogle(account);
                     } catch (ApiException e) {
                         // Google Sign In failed, update UI appropriately
@@ -245,6 +271,10 @@ public class LoginActivity extends AppCompatActivity implements
 
         }
 
+    /**
+     * Handling data provided by Facebook API
+     * @param token Data provided by Facebook API with credentials
+     */
     private void handleFacebookAccessToken(AccessToken token){
         Log.d(TAG, "handleFacebookAccessToken:" + token);
         final AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
@@ -256,36 +286,9 @@ public class LoginActivity extends AppCompatActivity implements
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser firebaseUser = mAuth.getCurrentUser();
-                            String email = firebaseUser.getEmail();
-                            User user = new User();
-                            user.setEmail(email);
-                            user.setUsername(email.substring(0, email.indexOf("@")));
-                            user.setUser_id(firebaseUser.getUid());
-
-
-                            DocumentReference newUserRef = mDb
-                                    .collection(getString(R.string.collection_users))
-                                    .document(firebaseUser.getUid());
-
-                            newUserRef.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-
-                                    if(task.isSuccessful()){
-                                        setupFirebaseAuth();
-                                    }else{
-                                        View parentLayout = findViewById(android.R.id.content);
-                                        if (task.getException() instanceof FirebaseAuthUserCollisionException) {
-                                            Snackbar.make(parentLayout, "Email został już użyty do logowania inną metodą!", Snackbar.LENGTH_SHORT).show();
-                                        }
-                                        else {
-                                            Snackbar.make(parentLayout, "Autoryzacja nieudana.", Snackbar.LENGTH_SHORT).show();
-                                        }
-                                    }
-                                }
-                            });
-
-                        } else {
+                            createNewUserInDB(Objects.requireNonNull(firebaseUser));
+                        }
+                        else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                             if (task.getException() instanceof FirebaseAuthUserCollisionException) {
@@ -306,6 +309,52 @@ public class LoginActivity extends AppCompatActivity implements
                 });
 
     }
+
+    /**
+     * Create User object. Fills the fields with provided credentials. Creates new document in Firebase
+     * @param firebaseUser Object created based on external API.
+     */
+
+    private void createNewUserInDB(FirebaseUser firebaseUser) {
+        String email = firebaseUser.getEmail();
+        User user = new User();
+        user.setEmail(email);
+        assert email != null;
+        user.setUsername(email.substring(0, email.indexOf("@")));
+        user.setUser_id(firebaseUser.getUid());
+
+
+        DocumentReference newUserRef = mDb
+                .collection(getString(R.string.collection_users))
+                .document(firebaseUser.getUid());
+        showDialog();
+
+        newUserRef.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                if(task.isSuccessful()){
+                    setupFirebaseAuth();
+                    hideDialog();
+                }else{
+                    View parentLayout = findViewById(android.R.id.content);
+                    if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                        Snackbar.make(parentLayout, "Email został już użyty do logowania inną metodą!", Snackbar.LENGTH_SHORT).show();
+                    }
+                    else {
+                        Snackbar.make(parentLayout, "Autoryzacja nieudana.", Snackbar.LENGTH_SHORT).show();
+                        hideDialog();
+                    }
+                }
+            }
+        });
+
+    }
+
+    /**
+     * Method determines which sign in method was selected.
+     * @param view Clicked item
+     */
 
     @Override
     public void onClick(View view) {
@@ -336,11 +385,19 @@ public class LoginActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Intent to start Google authorisation.
+     * After authorisation is completed, onActivityResult() method is revoke.
+     */
     private void signWithGoogle() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
+    /**
+     * Handling data provided by onActivityResult()
+     * @param acct Account made based on Google Account
+     */
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
         showDialog();
 
@@ -355,38 +412,9 @@ public class LoginActivity extends AppCompatActivity implements
                                 // Sign in success, update UI with the signed-in user's information
                                 Log.d(TAG, "signInWithCredential:success");
                                 FirebaseUser firebaseUser = mAuth.getCurrentUser();
-                                String email = firebaseUser.getEmail();
-                                User user = new User();
-                                user.setEmail(email);
-                                user.setUsername(email.substring(0, email.indexOf("@")));
-                                user.setUser_id(firebaseUser.getUid());
+                                assert firebaseUser != null;
+                                createNewUserInDB(firebaseUser);
 
-
-                                DocumentReference newUserRef = mDb
-                                        .collection(getString(R.string.collection_users))
-                                        .document(firebaseUser.getUid());
-                                showDialog();
-
-                                newUserRef.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> secondTtsk) {
-
-
-                                        if(secondTtsk.isSuccessful()){
-                                            setupFirebaseAuth();
-                                            hideDialog();
-                                        }else{
-                                            View parentLayout = findViewById(android.R.id.content);
-                                            if (secondTtsk.getException() instanceof FirebaseAuthUserCollisionException) {
-                                                Snackbar.make(parentLayout, "Email został już użyty do logowania inną metodą!", Snackbar.LENGTH_SHORT).show();
-                                            }
-                                            else {
-                                                Snackbar.make(parentLayout, "Autoryzacja nieudana.", Snackbar.LENGTH_SHORT).show();
-                                            }
-                                            hideDialog();
-                                        }
-                                    }
-                                });
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -406,9 +434,15 @@ public class LoginActivity extends AppCompatActivity implements
                         }
                     });
     }
+
+    /**
+     * Method checks if Internet connection status
+     * @return true if Internet connection is on, false otherwise
+     */
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        assert connectivityManager != null;
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }

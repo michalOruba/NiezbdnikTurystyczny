@@ -181,6 +181,11 @@ public class RegisterActivity extends AppCompatActivity implements
             Toast.makeText(RegisterActivity.this, "Brak połączenia z Internetem.", Toast.LENGTH_SHORT).show();
         }
     }
+
+    /**
+     * Method checks if Internet connection is on
+     * @return true if Internet connection is on, false otherwise
+     */
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
