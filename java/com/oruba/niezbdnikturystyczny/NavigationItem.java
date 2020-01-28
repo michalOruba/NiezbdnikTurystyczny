@@ -1,6 +1,10 @@
 package com.oruba.niezbdnikturystyczny;
 
-public class NavigationItem {
+
+import android.support.annotation.NonNull;
+
+
+public class NavigationItem implements Comparable<NavigationItem> {
     private String mHillName;
     private int mHillHeight;
     private int mImageResourceId;
@@ -41,5 +45,13 @@ public class NavigationItem {
 
     public String getmHillDescription() {
         return mHillDescription;
+    }
+
+
+    @Override
+    public int compareTo(@NonNull NavigationItem o) {
+        if (this == o) return 0;
+        if (o == null || getClass() != o.getClass()) return -1;
+        return mHillName.compareTo(o.mHillName);
     }
 }

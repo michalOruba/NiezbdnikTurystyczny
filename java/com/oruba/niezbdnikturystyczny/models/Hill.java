@@ -2,8 +2,11 @@ package com.oruba.niezbdnikturystyczny.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import com.google.firebase.firestore.GeoPoint;
+
+import java.util.Comparator;
 
 public class Hill implements Parcelable {
 
@@ -86,7 +89,7 @@ public class Hill implements Parcelable {
                 '}';
     }
 
-    protected Hill(Parcel in) {
+    private Hill(Parcel in) {
         hill_name = in.readString();
         hill_height = in.readInt();
         hill_avatar = in.readString();

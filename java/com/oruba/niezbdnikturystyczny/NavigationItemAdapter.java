@@ -2,7 +2,6 @@ package com.oruba.niezbdnikturystyczny;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -18,16 +17,21 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Objects;
+
+/**
+ * Class that prepares hills to be display in form of listView on the screen.
+ * Sets up Views values and handles popup detail view for clicked item.
+ */
 
 public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
 
     private Dialog myDialog;
     private Dialog progressDialog;
 
-    public NavigationItemAdapter(@NonNull Activity context, ArrayList<NavigationItem> items) {
+    NavigationItemAdapter(@NonNull Activity context, ArrayList<NavigationItem> items) {
         super(context,0, items);
     }
 
@@ -54,15 +58,20 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
         }, 500);
     }
 
+    /**
+     * Method prepares and displays information about selected hill
+     * @param mCurrentItem Clicked element
+     */
+
     private void showInfoDialog(final NavigationItem mCurrentItem) {
-        ImageView dialogImageView = (ImageView) myDialog.findViewById(R.id.desc_navigation_image);
-        TextView dialogHillName = (TextView) myDialog.findViewById(R.id.desc_navigation_hill_name);
-        TextView dialogHillHeight = (TextView) myDialog.findViewById(R.id.desc_navigation_hill_height);
-        TextView dialogHillDesc = (TextView) myDialog.findViewById(R.id.desc_navigation_hill_description);
-        Button dialogButton = (Button) myDialog.findViewById(R.id.navigation_dialog_button);
+        ImageView dialogImageView = myDialog.findViewById(R.id.desc_navigation_image);
+        TextView dialogHillName = myDialog.findViewById(R.id.desc_navigation_hill_name);
+        TextView dialogHillHeight = myDialog.findViewById(R.id.desc_navigation_hill_height);
+        TextView dialogHillDesc = myDialog.findViewById(R.id.desc_navigation_hill_description);
+        Button dialogButton = myDialog.findViewById(R.id.navigation_dialog_button);
         dialogImageView.setImageResource(mCurrentItem.getmImageResourceId());
         dialogHillName.setText(mCurrentItem.getmHillName());
-        dialogHillHeight.setText(String.valueOf(mCurrentItem.getmHillHeight()) + getContext().getString(R.string.MASLevel));
+        dialogHillHeight.setText(String.format("%1s%2s", mCurrentItem.getmHillHeight(), getContext().getString(R.string.MASLevel)));
         dialogHillDesc.setText(mCurrentItem.getmHillDescription());
         dialogHillDesc.setMovementMethod(new ScrollingMovementMethod());
         myDialog.show();
@@ -76,6 +85,13 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
         });
     }
 
+    /**
+     * Method is attaching  properties to each element on the list.
+     * @param position Position of clicked element on the list
+     * @param convertView is used for recycling elements - only few elements are display at on time.
+     * @param parent The parent is provided to possibility of inflate view into that for proper layout parameters
+     * @return New list item view to display to the user.
+     */
     @NonNull
     @Override
     public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -86,26 +102,29 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
         final NavigationItem currentItem = getItem(position);
 
 
-        //constraintLayout = listItemView.findViewById(R.id.desc_navigation_item_container);
         myDialog = new Dialog(getContext());
         myDialog.setContentView(R.layout.navigation_list_item_desc);
-        myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        Objects.requireNonNull(myDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         progressDialog = new Dialog(getContext());
         progressDialog.setContentView(R.layout.loading_dialog);
-        progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        Objects.requireNonNull(progressDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
         if (listItemView == null){
             listItemView = LayoutInflater.from(getContext()).inflate(
                     R.layout.navigation_list_item, parent, false);
         }
 
-        TextView navigationHillName = (TextView) listItemView.findViewById(R.id.navigation_hill_name);
+        TextView navigationHillName = listItemView.findViewById(R.id.navigation_hill_name);
+        assert currentItem != null;
         navigationHillName.setText(currentItem.getmHillName());
 
-        TextView navigationHillHeight = (TextView) listItemView.findViewById(R.id.navigation_hill_height);
-        navigationHillHeight.setText(String.valueOf(currentItem.getmHillHeight()) + getContext().getString(R.string.MASLevel));
+        TextView navigationHillHeight = listItemView.findViewById(R.id.navigation_hill_height);
 
-        ImageView navigationImageID = (ImageView) listItemView.findViewById(R.id.navigation_image);
+        navigationHillHeight.setText(String.format("%1s%2s", currentItem.getmHillHeight(), getContext().getString(R.string.MASLevel)));
+
+
+        //Handle click on background image
+        ImageView navigationImageID = listItemView.findViewById(R.id.navigation_image);
         navigationImageID.setImageResource(currentItem.getmImageResourceId());
         navigationImageID.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,12 +133,12 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
             }
         });
 
-        TextView navigationHillDescription = (TextView) listItemView.findViewById(R.id.navigation_hill_description);
+        TextView navigationHillDescription = listItemView.findViewById(R.id.navigation_hill_description);
         navigationHillDescription.setText(currentItem.getmHillDescription());
 
 
-
-        ImageView infoImageView = (ImageView) listItemView.findViewById(R.id.navigation_info_button);
+        //Handle click on info icon
+        ImageView infoImageView = listItemView.findViewById(R.id.navigation_info_button);
         infoImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,7 +146,7 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
             }
         });
 
-        final ImageView navigateImageView = (ImageView) listItemView.findViewById(R.id.navigation_navigate_button);
+        final ImageView navigateImageView = listItemView.findViewById(R.id.navigation_navigate_button);
 
 
 

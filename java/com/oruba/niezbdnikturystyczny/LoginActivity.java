@@ -91,6 +91,8 @@ public class LoginActivity extends AppCompatActivity implements
         findViewById(R.id.google_login_button).setOnClickListener(this);
 
 
+         // TODO Fix error that does not allow user to login via Gmail. Probably connected with SHA1 Key fingerprint change
+
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
@@ -249,6 +251,7 @@ public class LoginActivity extends AppCompatActivity implements
                 if (requestCode == RC_SIGN_IN) {
                     // The Task returned from this call is always completed, no need to attach
                     // a listener.
+                    Log.d(TAG, "onActivityResult: data is: " + data);
                     Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
                     try {
                         // Google Sign In was successful, authenticate with Firebase
