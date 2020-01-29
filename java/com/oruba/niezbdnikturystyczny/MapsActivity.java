@@ -58,6 +58,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -82,6 +83,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -109,13 +111,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationListener locationListener;
     private double hillLatitude;
     private double hillLongitude;
-    private String hillName;
     private double eventLatitude;
     private double eventLongitude;
     private double currentLatitude;
     private double currentLongitude;
     LatLngBounds mMapBoundary;
-    private ClusterManager mClusterManager;
+    private ClusterManager<ClusterMarker> mClusterManager;
     UserLocation mUserPosition;
     private MyClusterManagerRenderer mClusterManagerRenderer;
     private GeoApiContext mGeoApiContext = null;
@@ -140,17 +141,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Set<String> mHelpEventsIds = new HashSet<>();
 
     private ImageButton mapHelpButton, mapIssueButton;
-    private LinearLayout mapIssueLayout, mapHelpLayour;
+    private LinearLayout mapIssueLayout, mapHelpLayout;
 
-
+    /**
+     * This method initialize all views in layout.
+     * Loads proper items for map, and location services
+     *
+     * @param savedInstanceState saved state
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
 
-        mDb = FirebaseFirestore.getInstance();
-
         setContentView(R.layout.activity_maps);
+
         mUserListRecyclerView = findViewById(R.id.user_list_recycler_view);
         mMapContainer = findViewById(R.id.map_container);
         findViewById(R.id.btn_full_screen_map).setOnClickListener(this);
@@ -160,8 +165,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapIssueButton.setOnClickListener(this);
         mapIssueLayout = findViewById(R.id.mapIssueLayout);
         mapIssueLayout.setOnClickListener(this);
-        mapHelpLayour = findViewById(R.id.mapHelpLayout);
-        mapHelpLayour.setOnClickListener(this);
+        mapHelpLayout = findViewById(R.id.mapHelpLayout);
+        mapHelpLayout.setOnClickListener(this);
+
+        mDb = FirebaseFirestore.getInstance();
 
         Bundle mapViewBundle = null;
         if (savedInstanceState != null) {
@@ -172,7 +179,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mUserLocations = new ArrayList<>();
         }
 
-        mMapView = (MapView) findViewById(R.id.user_list_map);
+        mMapView = findViewById(R.id.user_list_map);
         mMapView.onCreate(mapViewBundle);
 
         mMapView.getMapAsync(this);
@@ -191,18 +198,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 currentLatitude = location.getLatitude();
                 currentLongitude = location.getLongitude();
-                Log.d("NavigateActivity", "Current latitude: " + currentLatitude + ", current longitude " + currentLongitude);
+                Log.d(TAG, "Current latitude: " + currentLatitude + ", current longitude " + currentLongitude);
             }
 
             @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
+            public void onStatusChanged(String provider, int status, Bundle extras) {}
 
             @Override
-            public void onProviderEnabled(String provider) {
-
-            }
+            public void onProviderEnabled(String provider) {}
 
             @Override
             public void onProviderDisabled(String provider) {
@@ -219,35 +222,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         String id = FirebaseAuth.getInstance().getUid();
         if (id != null) {
-            mDb = FirebaseFirestore.getInstance();
-            Log.d(TAG, "getUserPosition: user ID: " + id);
             DocumentReference docRef = mDb.collection(getString(R.string.collection_user_locations))
-                    .document(FirebaseAuth.getInstance().getUid());
-            Log.d(TAG, "getUserPosition: " + docRef);
+                    .document(id);
 
             docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    Log.d(TAG, "getUserPosition: successfully get the user location.");
                     if (task.isSuccessful()) {
-                        Log.d(TAG, "getUserPosition: successfully get the user location.");
-
-                        mUserPosition = task.getResult().toObject(UserLocation.class);
+                        mUserPosition = Objects.requireNonNull(task.getResult()).toObject(UserLocation.class);
                         if (task.getResult().toObject(UserLocation.class) != null) {
-
-                            Log.d(TAG, "D: " + mUserPosition.getGeo_point().getLatitude());
-                            Log.d(TAG, "getUserPosition: Long: " + mUserPosition.getGeo_point().getLongitude());
                             mUserLocations.add(task.getResult().toObject(UserLocation.class));
-                            Log.d(TAG, "onSaveInstanceState: im saving things to Parcel");
                             bundle.putParcelableArrayList("USER_LOCATIONS", mUserLocations);
                             calculateDirections(marker);
                         }
                     } else {
                         Log.d(TAG, "getUserPosition: Cached get failed: ", task.getException());
                     }
-
                 }
-
             });
         }
     }
@@ -277,14 +268,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             directions.destination(destination).setCallback(new PendingResult.Callback<DirectionsResult>() {
                 @Override
                 public void onResult(DirectionsResult result) {
-                    Log.d(TAG, "calculateDirections: routes: " + result.routes[0].toString());
-                    Log.d(TAG, "calculateDirections: duration: " + result.routes[0].legs[0].duration);
-                    Log.d(TAG, "calculateDirections: distance: " + result.routes[0].legs[0].distance);
-                    Log.d(TAG, "calculateDirections: geocodedWayPoints: " + result.geocodedWaypoints[0].toString());
-
                     addPolylinesToMap(result);
                 }
-
                 @Override
                 public void onFailure(Throwable e) {
                     Log.d(TAG, "calculateDirections: Failed to get directions: " + e.getMessage());
@@ -297,7 +282,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             alertBuilder.setMessage("Błąd obliczania odległości");
             final AlertDialog alert = alertBuilder.create();
             alert.show();
-
         }
     }
 
@@ -313,7 +297,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         polylineData.getPolyline().remove();
                     }
                     mPolylinesData.clear();
-                    mPolylinesData = new ArrayList<>();
                 }
                 double duration = 99999999999.99;
                 for (DirectionsRoute route : result.routes) {
@@ -438,14 +421,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case 10:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                    configureButton();
+        if (requestCode == 10) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                grantPermissions();
         }
     }
 
-    private void configureButton() {
+    private void grantPermissions() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -487,6 +469,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         getHillParams();
         getEventsFromDB();
         getHelpFromDB();
+
         LatLng hillMarker =  new LatLng(hillLatitude, hillLongitude);
         mMapView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
@@ -510,7 +493,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void addMapMarkers(){
         if (mMap != null){
             if (mClusterManager == null){
-                mClusterManager = new ClusterManager<ClusterMarker>(getApplicationContext(), mMap);
+                mClusterManager = new ClusterManager<>(getApplicationContext(), mMap);
             }
             if (mClusterManagerRenderer == null){
                 mClusterManagerRenderer = new MyClusterManagerRenderer(
@@ -528,45 +511,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         String snippet = "Data wystąpienia: " + sfd.format(events.getAdd_date()) + "\nKliknij aby potwierdzić.";
                         String avatar = events.getAvatar();
 
-                        ClusterMarker newClusterMarker = new ClusterMarker(
-                                new LatLng(events.getGeo_point().getLatitude(), events.getGeo_point().getLongitude()),
-                                events.getEvent_name(),
-                                snippet,
-                                getResources().getIdentifier(avatar,"drawable", getPackageName()),
-                                events.getEvent_id()
-                        );
-                        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
-                            @Override
-                            public View getInfoWindow(Marker arg0) {
-                                return null;
-                            }
-
-                            @Override
-                            public View getInfoContents(Marker marker) {
-
-                                LinearLayout info = new LinearLayout(getApplication());
-                                info.setOrientation(LinearLayout.VERTICAL);
-
-                                TextView title = new TextView(getApplication());
-                                title.setTextColor(Color.BLACK);
-                                title.setGravity(Gravity.CENTER);
-                                title.setTypeface(null, Typeface.BOLD);
-                                title.setText(marker.getTitle());
-
-                                TextView snippet = new TextView(getApplication());
-                                snippet.setTextColor(Color.GRAY);
-                                snippet.setText(marker.getSnippet());
-
-                                info.addView(title);
-                                info.addView(snippet);
-
-                                return info;
-                            }
-                        });
-                        mClusterManager.addItem(newClusterMarker);
-                        mClusterMarkers.add(newClusterMarker);
-                        mClusterMarkersIds.add(newClusterMarker.getEventId());
+                        addMarkerToCluster(events, snippet, avatar);
                     }
                 }catch (NullPointerException e){
                     Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage());
@@ -580,45 +526,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         String snippet = getString(R.string.new_help_title) + "\nData wystąpienia: " + sfd.format(helpEvents.getAdd_date());
                         String avatar = helpEvents.getAvatar();
 
-                        ClusterMarker newClusterMarker = new ClusterMarker(
-                                new LatLng(helpEvents.getGeo_point().getLatitude(), helpEvents.getGeo_point().getLongitude()),
-                                helpEvents.getEvent_name(),
-                                snippet,
-                                getResources().getIdentifier(avatar,"drawable", getPackageName()),
-                                helpEvents.getEvent_id()
-                        );
-                        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
-
-                            @Override
-                            public View getInfoWindow(Marker arg0) {
-                                return null;
-                            }
-
-                            @Override
-                            public View getInfoContents(Marker marker) {
-
-                                LinearLayout info = new LinearLayout(getApplication());
-                                info.setOrientation(LinearLayout.VERTICAL);
-
-                                TextView title = new TextView(getApplication());
-                                title.setTextColor(Color.BLACK);
-                                title.setGravity(Gravity.CENTER);
-                                title.setTypeface(null, Typeface.BOLD);
-                                title.setText(marker.getTitle());
-
-                                TextView snippet = new TextView(getApplication());
-                                snippet.setTextColor(Color.GRAY);
-                                snippet.setText(marker.getSnippet());
-
-                                info.addView(title);
-                                info.addView(snippet);
-
-                                return info;
-                            }
-                        });
-                        mClusterManager.addItem(newClusterMarker);
-                        mClusterMarkers.add(newClusterMarker);
-                        mClusterMarkersIds.add(newClusterMarker.getEventId());
+                        addMarkerToCluster(helpEvents, snippet, avatar);
                     }
                 }catch (NullPointerException e){
                     Log.e(TAG, "addMapMarkers: NullPointerException: " + e.getMessage());
@@ -628,17 +536,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    private void addMarkerToCluster(Event events, String snippet,String avatar) {
+        ClusterMarker newClusterMarker = new ClusterMarker(
+                new LatLng(events.getGeo_point().getLatitude(), events.getGeo_point().getLongitude()),
+                events.getEvent_name(),
+                snippet,
+                getResources().getIdentifier(avatar,"drawable", getPackageName()),
+                events.getEvent_id()
+        );
+        mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+            @Override
+            public View getInfoWindow(Marker arg0) {
+                return null;
+            }
+
+            @Override
+            public View getInfoContents(Marker marker) {
+
+                LinearLayout info = new LinearLayout(getApplication());
+                info.setOrientation(LinearLayout.VERTICAL);
+
+                TextView title = new TextView(getApplication());
+                title.setTextColor(Color.BLACK);
+                title.setGravity(Gravity.CENTER);
+                title.setTypeface(null, Typeface.BOLD);
+                title.setText(marker.getTitle());
+
+                TextView snippet = new TextView(getApplication());
+                snippet.setTextColor(Color.GRAY);
+                snippet.setText(marker.getSnippet());
+
+                info.addView(title);
+                info.addView(snippet);
+
+                return info;
+            }
+        });
+        mClusterManager.addItem(newClusterMarker);
+        mClusterMarkers.add(newClusterMarker);
+        mClusterMarkersIds.add(newClusterMarker.getEventId());
+    }
+
     public void getEventsFromDB(){
 
         CollectionReference getEventsRef = mDb.collection(getString(R.string.collection_events));
         // Converting current date - 1 day to Firebase Timestamp format
-        Date date = new Date();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime ( date ); // convert your date to Calendar object
-        int daysToDecrement = -1;
-        cal.add(Calendar.DATE, daysToDecrement);
-        date = cal.getTime();
-        Timestamp ts = new Timestamp(date);
+        Timestamp ts = getTimestamp();
 
         getEventsRef
                 .orderBy("add_date", Query.Direction.ASCENDING)
@@ -659,24 +603,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     if(!mEventsIds.contains(event.getEvent_id())){
                                         if(updatingStarted == 1){
 
-                                            Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-                                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                                                    .putExtra("EVENT_LATITUDE", event.getGeo_point().getLatitude())
-                                                    .putExtra("EVENT_LONGITUDE", event.getGeo_point().getLongitude())
-                                                    .putExtra("EVENT_NAME", event.getEvent_name());
-                                            final PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0 , intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                                            String CHANNEL_ID = "my_channel_01";
-                                            NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-                                                    .setSmallIcon(getResources().getIdentifier(event.getAvatar(),"drawable", getPackageName()))
-                                                    .setContentTitle(getString(R.string.new_issue_title))
-                                                    .setContentText(getString(R.string.new_issue_content))
-                                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                                    .setContentIntent(pendingIntent)
-                                                    .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
-                                                    .setAutoCancel(true);
-                                            NotificationManager notificationManagerCompat = (NotificationManager) getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
-                                            notificationManagerCompat.notify(1, builder.build());
+                                            prepareNotificationForEvent(event.getGeo_point(), event.getEvent_name(), event.getAvatar(), R.string.new_issue_title, R.string.new_issue_content);
                                         }
                                         mEventsIds.add(event.getEvent_id());
                                         mEvents.add(event);
@@ -693,19 +620,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 });
     }
 
+    @NonNull
+    private Timestamp getTimestamp() {
+        Date date = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date); // convert your date to Calendar object
+        int daysToDecrement = -1;
+        cal.add(Calendar.DATE, daysToDecrement);
+        date = cal.getTime();
+        return new Timestamp(date);
+    }
+
 
     public void getHelpFromDB(){
 
         CollectionReference getHelpRef = mDb.collection(getString(R.string.collection_help));
         // Converting current date - 1 day to Firebase Timestamp format
-        Date date = new Date();
-        Calendar cal = Calendar.getInstance();
-        cal.setTime ( date ); // convert your date to Calendar object
-        int daysToDecrement = -1;
-        cal.add(Calendar.DATE, daysToDecrement);
-        date = cal.getTime();
-        Timestamp ts = new Timestamp(date);
-
+        Timestamp ts = getTimestamp();
 
 
         getHelpRef
@@ -727,24 +658,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     if(!mHelpEventsIds.contains(helpEvent.getEvent_id())){
                                         if(updatingHelpStarted == 1){
 
-                                            Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-                                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                                                    .putExtra("EVENT_LATITUDE", helpEvent.getGeo_point().getLatitude())
-                                                    .putExtra("EVENT_LONGITUDE", helpEvent.getGeo_point().getLongitude())
-                                                    .putExtra("EVENT_NAME", helpEvent.getEvent_name());
-                                            final PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0 , intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-                                            String CHANNEL_ID = "my_channel_01";
-                                            NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-                                                    .setSmallIcon(getResources().getIdentifier(helpEvent.getAvatar(),"drawable", getPackageName()))
-                                                    .setContentTitle(getString(R.string.new_help_title))
-                                                    .setContentText(getString(R.string.new_help_content))
-                                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                                    .setContentIntent(pendingIntent)
-                                                    .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
-                                                    .setAutoCancel(true);
-                                            NotificationManager notificationManagerCompat = (NotificationManager) getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
-                                            notificationManagerCompat.notify(1, builder.build());
+                                            prepareNotificationForEvent(helpEvent.getGeo_point(), helpEvent.getEvent_name(), helpEvent.getAvatar(), R.string.new_help_title, R.string.new_help_content);
                                         }
                                         mHelpEventsIds.add(helpEvent.getEvent_id());
                                         mHelpEvents.add(helpEvent);
@@ -759,6 +673,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     }
                 });
+    }
+
+    private void prepareNotificationForEvent(GeoPoint geo_point, String event_name, String avatar, int p, int p2) {
+        Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                .putExtra("EVENT_LATITUDE", geo_point.getLatitude())
+                .putExtra("EVENT_LONGITUDE", geo_point.getLongitude())
+                .putExtra("EVENT_NAME", event_name);
+        final PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        String CHANNEL_ID = "my_channel_01";
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+                .setSmallIcon(getResources().getIdentifier(avatar, "drawable", getPackageName()))
+                .setContentTitle(getString(p))
+                .setContentText(getString(p2))
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
+                .setAutoCancel(true);
+        NotificationManager notificationManagerCompat = (NotificationManager) getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
+        Objects.requireNonNull(notificationManagerCompat).notify(1, builder.build());
     }
 
 
@@ -795,7 +730,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void getHillParams(){
-        hillName = getIntent().getStringExtra("HILL_NAME");
         hillLatitude = getIntent().getDoubleExtra("HILL_LATITUDE", 0);
         hillLongitude = getIntent().getDoubleExtra("HILL_LONGITUDE", 0);
 
@@ -936,20 +870,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 break;
             }
             case R.id.mapHelpButton:
+            case R.id.mapHelpLayout:
                 Intent helpIntent = new Intent(this, HelpActivity.class);
                 startActivity(helpIntent);
                 break;
             case R.id.mapIssueButton:
+            case R.id.mapIssueLayout:
                 Intent issueIntent = new Intent(this, IssueActivity.class);
                 startActivity(issueIntent);
-                break;
-            case R.id.mapHelpLayout:
-                Intent helpLayoutIntent = new Intent(this, HelpActivity.class);
-                startActivity(helpLayoutIntent);
-                break;
-            case R.id.mapIssueLayout:
-                Intent issueLayoutIntent = new Intent(this, IssueActivity.class);
-                startActivity(issueLayoutIntent);
                 break;
         }
     }
@@ -1056,7 +984,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        NetworkInfo activeNetworkInfo = Objects.requireNonNull(connectivityManager).getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 

@@ -170,8 +170,6 @@ public class MainActivity extends AppCompatActivity {
                         User user = Objects.requireNonNull(task.getResult()).toObject(User.class);
                         mUserLocation.setUser(user);
 
-                        ((UserClient) getApplicationContext()).setUser(user);
-
                         getLastKnownLocation();
                     }
                 }

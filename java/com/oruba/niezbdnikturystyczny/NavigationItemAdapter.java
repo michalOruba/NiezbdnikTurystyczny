@@ -102,12 +102,7 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
         final NavigationItem currentItem = getItem(position);
 
 
-        myDialog = new Dialog(getContext());
-        myDialog.setContentView(R.layout.navigation_list_item_desc);
-        Objects.requireNonNull(myDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        progressDialog = new Dialog(getContext());
-        progressDialog.setContentView(R.layout.loading_dialog);
-        Objects.requireNonNull(progressDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        createDialogs();
 
         if (listItemView == null){
             listItemView = LayoutInflater.from(getContext()).inflate(
@@ -119,7 +114,6 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
         navigationHillName.setText(currentItem.getmHillName());
 
         TextView navigationHillHeight = listItemView.findViewById(R.id.navigation_hill_height);
-
         navigationHillHeight.setText(String.format("%1s%2s", currentItem.getmHillHeight(), getContext().getString(R.string.MASLevel)));
 
 
@@ -147,20 +141,28 @@ public class NavigationItemAdapter extends ArrayAdapter<NavigationItem> {
         });
 
         final ImageView navigateImageView = listItemView.findViewById(R.id.navigation_navigate_button);
-
-
-
-
-
         navigateImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 runMapsActivity(currentItem);
             }
         });
 
 
         return listItemView;
+    }
+
+
+    /**
+     * Method that initialize dialogs elements
+     */
+    private void createDialogs() {
+        myDialog = new Dialog(getContext());
+        myDialog.setContentView(R.layout.navigation_list_item_desc);
+        Objects.requireNonNull(myDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        progressDialog = new Dialog(getContext());
+        progressDialog.setContentView(R.layout.loading_dialog);
+        Objects.requireNonNull(progressDialog.getWindow()).setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
     }
 }

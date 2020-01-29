@@ -4,6 +4,10 @@ package com.oruba.niezbdnikturystyczny;
 import android.support.annotation.NonNull;
 
 
+/**
+ * Class instances are elements of an array list, displayed on Navigation Layout
+ */
+
 public class NavigationItem implements Comparable<NavigationItem> {
     private String mHillName;
     private int mHillHeight;
@@ -13,7 +17,7 @@ public class NavigationItem implements Comparable<NavigationItem> {
     private String mHillDescription;
 
 
-    public NavigationItem(String hillName, int hillHeight, int imageResourceID, double hillLatitude, double hillLongitude, String hillDescription){
+    NavigationItem(String hillName, int hillHeight, int imageResourceID, double hillLatitude, double hillLongitude, String hillDescription){
         mHillName = hillName;
         mHillHeight = hillHeight;
         mImageResourceId = imageResourceID;
@@ -23,31 +27,35 @@ public class NavigationItem implements Comparable<NavigationItem> {
 
     }
 
-    public String getmHillName() {
+    String getmHillName() {
         return mHillName;
     }
 
-    public int getmHillHeight() {
+    int getmHillHeight() {
         return mHillHeight;
     }
 
-    public int getmImageResourceId() {
+    int getmImageResourceId() {
         return mImageResourceId;
     }
 
-    public double getmHillLongitude() {
+    double getmHillLongitude() {
         return mHillLongitude;
     }
 
-    public double getmHillLatitude() {
+    double getmHillLatitude() {
         return mHillLatitude;
     }
 
-    public String getmHillDescription() {
+    String getmHillDescription() {
         return mHillDescription;
     }
 
-
+    /**
+     * Compare objects based on @mHillName
+     * @param o Object to compare with
+     * @return < 0 if this is first, 0 when equal, > 0 otherwise
+     */
     @Override
     public int compareTo(@NonNull NavigationItem o) {
         if (this == o) return 0;

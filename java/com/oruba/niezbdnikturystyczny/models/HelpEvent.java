@@ -9,14 +9,11 @@ import com.google.firebase.firestore.ServerTimestamp;
 
 import java.util.Date;
 
-public class HelpEvent implements Parcelable {
+public class HelpEvent extends Event implements Parcelable {
 
     private GeoPoint geo_point;
     private String event_name;
     private String avatar;
-
-
-
     private String event_id;
     private @ServerTimestamp Date add_date;
     private User user;

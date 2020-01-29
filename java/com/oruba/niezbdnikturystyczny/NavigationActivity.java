@@ -20,6 +20,10 @@ import com.oruba.niezbdnikturystyczny.models.Hill;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * Populates listView in the Navigation Layout with all hills from database
+ */
+
 public class NavigationActivity extends AppCompatActivity{
     private static final String TAG = "NavigationActivity";
 

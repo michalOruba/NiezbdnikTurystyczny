@@ -25,11 +25,15 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
+
+import java.util.Objects;
 
 import static android.text.TextUtils.isEmpty;
 import static com.oruba.niezbdnikturystyczny.util.Check.doStringsMatch;
 
+/**
+ * Class provide logic to register new user via login and password method
+ */
 
 public class RegisterActivity extends AppCompatActivity implements
         View.OnClickListener
@@ -49,10 +53,10 @@ public class RegisterActivity extends AppCompatActivity implements
         this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        mEmail = (EditText) findViewById(R.id.input_email);
-        mPassword = (EditText) findViewById(R.id.input_password);
-        mConfirmPassword = (EditText) findViewById(R.id.input_confirm_password);
-        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        mEmail = findViewById(R.id.input_email);
+        mPassword = findViewById(R.id.input_password);
+        mConfirmPassword = findViewById(R.id.input_confirm_password);
+        mProgressBar = findViewById(R.id.progressBar);
 
         findViewById(R.id.btn_register).setOnClickListener(this);
 
@@ -63,8 +67,8 @@ public class RegisterActivity extends AppCompatActivity implements
 
     /**
      * Register a new email and password to Firebase Authentication
-     * @param email
-     * @param password
+     * @param email email addres provided by user in a form
+     * @param password password provided by user in a form
      */
     public void registerNewEmail(final String email, String password){
 
@@ -77,7 +81,7 @@ public class RegisterActivity extends AppCompatActivity implements
                         Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
 
                         if (task.isSuccessful()){
-                            Log.d(TAG, "onComplete: AuthState: " + FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            Log.d(TAG, "onComplete: AuthState: " + Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid());
 
                             //insert some default data
                             User user = new User();
@@ -88,7 +92,7 @@ public class RegisterActivity extends AppCompatActivity implements
 
                             DocumentReference newUserRef = mDb
                                     .collection(getString(R.string.collection_users))
-                                    .document(FirebaseAuth.getInstance().getUid());
+                                    .document(Objects.requireNonNull(FirebaseAuth.getInstance().getUid()));
 
                             newUserRef.set(user).addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
@@ -134,18 +138,26 @@ public class RegisterActivity extends AppCompatActivity implements
         finish();
     }
 
-
+    /**
+     * Shows progressbar
+     */
     private void showDialog(){
         mProgressBar.setVisibility(View.VISIBLE);
 
     }
 
+    /**
+     * Hides progressbar
+     */
     private void hideDialog(){
         if(mProgressBar.getVisibility() == View.VISIBLE){
             mProgressBar.setVisibility(View.INVISIBLE);
         }
     }
 
+    /**
+     * Hides keyboard
+     */
     private void hideSoftKeyboard(){
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
@@ -153,28 +165,25 @@ public class RegisterActivity extends AppCompatActivity implements
     @Override
     public void onClick(View view) {
         if(isNetworkAvailable()) {
-            switch (view.getId()) {
-                case R.id.btn_register: {
-                    Log.d(TAG, "onClick: attempting to register.");
+            if (view.getId() == R.id.btn_register) {
+                Log.d(TAG, "onClick: attempting to register.");
 
-                    //check for null valued EditText fields
-                    if (!isEmpty(mEmail.getText().toString())
-                            && !isEmpty(mPassword.getText().toString())
-                            && !isEmpty(mConfirmPassword.getText().toString())) {
+                //check for null valued EditText fields
+                if (!isEmpty(mEmail.getText().toString())
+                        && !isEmpty(mPassword.getText().toString())
+                        && !isEmpty(mConfirmPassword.getText().toString())) {
 
-                        //check if passwords match
-                        if (doStringsMatch(mPassword.getText().toString(), mConfirmPassword.getText().toString())) {
+                    //check if passwords match
+                    if (doStringsMatch(mPassword.getText().toString(), mConfirmPassword.getText().toString())) {
 
-                            //Initiate registration task
-                            registerNewEmail(mEmail.getText().toString(), mPassword.getText().toString());
-                        } else {
-                            Toast.makeText(RegisterActivity.this, "Hasła nie są takie same", Toast.LENGTH_SHORT).show();
-                        }
-
+                        //Initiate registration task
+                        registerNewEmail(mEmail.getText().toString(), mPassword.getText().toString());
                     } else {
-                        Toast.makeText(RegisterActivity.this, "Musisz wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(RegisterActivity.this, "Hasła nie są takie same", Toast.LENGTH_SHORT).show();
                     }
-                    break;
+
+                } else {
+                    Toast.makeText(RegisterActivity.this, "Musisz wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
                 }
             }
         }else {
@@ -189,7 +198,7 @@ public class RegisterActivity extends AppCompatActivity implements
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        NetworkInfo activeNetworkInfo = Objects.requireNonNull(connectivityManager).getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
